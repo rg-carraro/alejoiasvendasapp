@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="AleJoiasAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">#145A4A</item>
+        <item name="colorSecondary">#B88A44</item>
+        <item name="colorSurface">#FFFDF9</item>
+        <item name="android:textColorPrimary">#27312E</item>
+        <item name="android:textColorSecondary">#646C68</item>
+        <item name="shapeAppearanceOverlay">@style/AleJoiasDialogShape</item>
+    </style>
+    <style name="AleJoiasDialogShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#424242</item>
-        <item name="colorPrimary">#616161</item>
-        <item name="colorPrimaryVariant">#424242</item>
+        <item name="android:navigationBarColor">#F7F3EC</item>
+        <item name="android:statusBarColor">#F7F3EC</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="colorPrimary">#145A4A</item>
+        <item name="colorPrimaryVariant">#0B3D33</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorAccent">#9E9E9E</item>
+        <item name="colorSecondary">#B88A44</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorAccent">#B88A44</item>
+        <item name="android:windowBackground">#F7F3EC</item>
+        <item name="materialAlertDialogTheme">@style/AleJoiasAlertDialog</item>
     </style>
 </resources>

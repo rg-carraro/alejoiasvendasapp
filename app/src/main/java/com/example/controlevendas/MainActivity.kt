@@ -36,6 +36,18 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
+    // Paleta visual AleJoias.
+    private val corFundo = Color.rgb(247, 243, 236)
+    private val corSuperficie = Color.rgb(255, 253, 249)
+    private val corPrimaria = Color.rgb(20, 90, 74)
+    private val corPrimariaEscura = Color.rgb(11, 61, 51)
+    private val corDestaque = Color.rgb(184, 138, 68)
+    private val corTexto = Color.rgb(39, 49, 46)
+    private val corTextoSecundario = Color.rgb(100, 108, 104)
+    private val corBorda = Color.rgb(222, 211, 194)
+    private val corQuitado = Color.rgb(226, 244, 235)
+    private val corVencido = Color.rgb(253, 232, 229)
+
     private lateinit var content: LinearLayout
     private lateinit var statusText: TextView
     private lateinit var localDb: LocalDatabase
@@ -43,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private var vendasCache: List<VendaRelatorio> = emptyList()
     private var telaAtual = "menu"
     private var mesResumoSelecionado: String? = null
+    private var mesDashboardSelecionado: String? = null
 
     private var filtroInicio: String? = null
     private var filtroFim: String? = null
@@ -103,29 +116,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun montarTela() {
         val root = FrameLayout(this).apply {
-            setBackgroundColor(Color.rgb(244, 244, 244))
+            setBackgroundColor(corFundo)
         }
 
         val watermark = ImageView(this).apply {
             setImageResource(R.drawable.watermark_alejoias)
-            alpha = 0.10f
+            alpha = 0.38f
             scaleType = ImageView.ScaleType.FIT_CENTER
+            contentDescription = "Marca AleJoias"
         }
-
-        root.addView(
-            watermark,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            ).apply {
-                gravity = Gravity.CENTER
-                setMargins(dp(28), dp(120), dp(28), dp(120))
-            }
-        )
 
         val mainContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(16))
+            setPadding(dp(16), dp(8), dp(16), dp(16))
             setBackgroundColor(Color.TRANSPARENT)
         }
 
@@ -133,7 +136,7 @@ class MainActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setPadding(dp(10), dp(10), dp(10), dp(12))
-            background = fundoArredondado(Color.argb(235, 255, 255, 255), 28f)
+            background = fundoArredondadoComBorda(corSuperficie, 28f, corBorda)
         }
 
         val titulo = TextView(this).apply {
@@ -141,14 +144,14 @@ class MainActivity : AppCompatActivity() {
             textSize = if (resources.displayMetrics.widthPixels < 900) 24f else 29f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            setTextColor(Color.rgb(35, 35, 35))
+            setTextColor(corPrimariaEscura)
         }
 
         val subtitulo = TextView(this).apply {
             text = "ERP Simples De Vendas"
             textSize = 14f
             gravity = Gravity.CENTER
-            setTextColor(Color.rgb(100, 100, 100))
+            setTextColor(corDestaque)
         }
 
         header.addView(titulo)
@@ -157,7 +160,7 @@ class MainActivity : AppCompatActivity() {
         statusText = TextView(this).apply {
             text = ""
             textSize = 14f
-            setTextColor(Color.rgb(70, 70, 70))
+            setTextColor(corTextoSecundario)
             setPadding(dp(4), dp(12), dp(4), dp(8))
         }
 
@@ -175,6 +178,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         scroll.addView(content)
+
+        mainContainer.addView(
+            watermark,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(96)
+            ).apply {
+                setMargins(dp(24), 0, dp(24), dp(6))
+            }
+        )
 
         mainContainer.addView(
             header,
@@ -278,7 +291,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
         }
-        content.addView(pesquisaCliente, margemCard())
+        content.addView(campoRotulado("Cliente:", pesquisaCliente), margemCard())
 
         content.addView(botaoVoltar("Aplicar Pesquisa") {
             filtroCliente = pesquisaCliente.text.toString()
@@ -340,8 +353,8 @@ class MainActivity : AppCompatActivity() {
             setOnClickListener { abrirCalendario(this) }
         }
 
-        layout.addView(dataInicio)
-        layout.addView(dataFim)
+        layout.addView(campoRotulado("Data inicial:", dataInicio))
+        layout.addView(campoRotulado("Data final:", dataFim))
 
         AlertDialog.Builder(this)
             .setTitle(titulo)
@@ -362,9 +375,9 @@ class MainActivity : AppCompatActivity() {
         val vencido = estaVencida(venda)
 
         val corCard = when {
-            quitado -> Color.rgb(220, 245, 220)       // verde claro
-            vencido -> Color.rgb(255, 225, 225)       // vermelho claro
-            else -> Color.WHITE                       // em aberto, mas ainda não venceu
+            quitado -> corQuitado
+            vencido -> corVencido
+            else -> corSuperficie
         }
 
         val parcelaInfo = if ((venda.parcelas ?: 1) > 1) {
@@ -376,12 +389,13 @@ class MainActivity : AppCompatActivity() {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(12), dp(16), dp(12))
-            background = fundoArredondadoComBorda(corCard, 20f, Color.argb(80, 150, 150, 150))
+            background = fundoArredondadoComBorda(corCard, 20f, corBorda)
             isClickable = true
             setOnClickListener { abrirOpcoesCard(venda) }
         }
 
         card.addView(texto(nome, 17f, true))
+        card.addView(etiquetaStatus(venda))
         card.addView(TextView(this).apply {
             text = "$parcelaInfo\n" +
                     "Compra: ${venda.data_venda ?: "-"}\n" +
@@ -391,7 +405,7 @@ class MainActivity : AppCompatActivity() {
                     (if (venda.total_pago > 0.0) "Data Pagamento: ${dataPagamentoLocal(venda)}\n" else "") +
                     "Faltante: ${moeda.format(venda.saldo)}"
             textSize = 13f
-            setTextColor(Color.rgb(65, 65, 65))
+            setTextColor(corTextoSecundario)
             setPadding(0, dp(6), 0, 0)
         })
 
@@ -404,59 +418,156 @@ class MainActivity : AppCompatActivity() {
         return !quitado && vencimento < hoje
     }
 
-    private fun abrirOpcoesCard(venda: VendaRelatorio) {
-        val opcoes = arrayOf("Ver Detalhes", "Editar Card", "Registrar Pagamento", "Cobrar Via WhatsApp", "Corrigir Valor Pago", "Deletar Card")
-        AlertDialog.Builder(this)
-            .setTitle(venda.nome_cliente ?: "Venda")
-            .setItems(opcoes) { _, which ->
-                when (which) {
-                    0 -> abrirDetalhesVenda(venda)
-                    1 -> abrirDialogVenda(venda)
-                    2 -> abrirDialogPagamento(venda)
-                    3 -> cobrarViaWhatsApp(venda)
-                    4 -> abrirDialogCorrigirPagamento(venda)
-                    5 -> confirmarDeletarCard(venda)
-                }
+    private fun etiquetaStatus(venda: VendaRelatorio): TextView {
+        val quitado = venda.total_pago >= venda.valor_total
+        val vencido = estaVencida(venda)
+        return TextView(this).apply {
+            text = when {
+                quitado -> "QUITADO"
+                vencido -> "VENCIDO"
+                venda.total_pago > 0.0 -> "PAGO PARCIALMENTE"
+                else -> "EM ABERTO"
             }
-            .show()
+            textSize = 11f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(
+                when {
+                    quitado -> corPrimariaEscura
+                    vencido -> Color.rgb(153, 55, 47)
+                    else -> Color.rgb(125, 87, 32)
+                }
+            )
+            gravity = Gravity.CENTER
+            setPadding(dp(10), dp(4), dp(10), dp(4))
+            background = fundoArredondado(
+                when {
+                    quitado -> Color.rgb(197, 231, 214)
+                    vencido -> Color.rgb(248, 205, 199)
+                    else -> Color.rgb(244, 229, 197)
+                },
+                18f
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, dp(7), 0, dp(2)) }
+        }
+    }
+
+    private fun abrirOpcoesCard(venda: VendaRelatorio) {
+        lateinit var dialog: AlertDialog
+        val opcoes = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+        }
+
+        fun adicionarOpcao(texto: String, destrutiva: Boolean = false, acao: () -> Unit) {
+            opcoes.addView(botaoOpcaoMenu(texto, destrutiva) {
+                dialog.dismiss()
+                acao()
+            })
+        }
+
+        adicionarOpcao("Ver detalhes") { abrirDetalhesVenda(venda) }
+        adicionarOpcao("Editar card") { abrirDialogVenda(venda) }
+        adicionarOpcao("Registrar pagamento") { abrirDialogPagamento(venda) }
+        adicionarOpcao("Cobrar via WhatsApp") { cobrarViaWhatsApp(venda) }
+        adicionarOpcao("Corrigir valor pago") { abrirDialogCorrigirPagamento(venda) }
+        adicionarOpcao("Deletar card", destrutiva = true) { confirmarDeletarCard(venda) }
+
+        dialog = AlertDialog.Builder(this)
+            .setTitle(venda.nome_cliente ?: "Venda")
+            .setView(opcoes)
+            .setNegativeButton("Fechar", null)
+            .create()
+        dialog.show()
     }
 
     private fun abrirDetalhesVenda(venda: VendaRelatorio) {
-        val msg = "Cliente: ${venda.nome_cliente ?: "-"}\n" +
-                "Descrição: ${venda.descricao ?: "-"}\n" +
-                "Data Da Compra: ${venda.data_venda ?: "-"}\n" +
-                "Vencimento: ${venda.data_vencimento ?: "-"}\n" +
-                "Parcela: ${venda.parcela_atual ?: 1}/${venda.parcelas ?: 1}\n\n" +
-                "Valor: ${moeda.format(venda.valor_total)}\n" +
-                "Pago: ${moeda.format(venda.total_pago)}\n" +
-                "Faltante: ${moeda.format(venda.saldo)}"
+        val painel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(18), dp(12), dp(18), dp(10))
+            background = fundoArredondadoComBorda(corSuperficie, 22f, corBorda)
+        }
+
+        painel.addView(texto(venda.nome_cliente ?: "Cliente não informado", 20f, true).apply {
+            setTextColor(corPrimariaEscura)
+        })
+        painel.addView(etiquetaStatus(venda))
+        painel.addView(linhaDetalhe("Descrição", venda.descricao ?: "-"))
+        painel.addView(linhaDetalhe("Data da compra", venda.data_venda ?: "-"))
+        painel.addView(linhaDetalhe("Vencimento", venda.data_vencimento ?: "-"))
+        painel.addView(linhaDetalhe("Parcela", "${venda.parcela_atual ?: 1}/${venda.parcelas ?: 1}"))
+        painel.addView(linhaDetalhe("Valor da venda", moeda.format(venda.valor_total), true))
+        painel.addView(linhaDetalhe("Valor pago", moeda.format(venda.total_pago), true))
+        painel.addView(linhaDetalhe("Saldo faltante", moeda.format(venda.saldo), true))
+
+        if (venda.total_pago > 0.0) {
+            painel.addView(linhaDetalhe("Data do pagamento", dataPagamentoLocal(venda)))
+        }
 
         AlertDialog.Builder(this)
             .setTitle("Detalhes Da Venda")
-            .setMessage(msg)
+            .setView(painel)
             .setPositiveButton("Registrar Pagamento") { _, _ -> abrirDialogPagamento(venda) }
             .setNegativeButton("Fechar", null)
             .show()
     }
 
+    private fun linhaDetalhe(rotulo: String, valor: String, destaque: Boolean = false): LinearLayout =
+        LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(9), 0, dp(8))
+
+            addView(texto("$rotulo:", 12f, true).apply {
+                setTextColor(corTextoSecundario)
+            })
+            addView(texto(valor, if (destaque) 17f else 15f, destaque).apply {
+                setTextColor(if (destaque) corPrimariaEscura else corTexto)
+            })
+
+            background = GradientDrawable().apply {
+                setColor(Color.TRANSPARENT)
+                setStroke(0, Color.TRANSPARENT)
+            }
+        }
+
+    private fun painelMensagem(mensagem: String, aviso: Boolean = false): LinearLayout =
+        LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(18), dp(14), dp(18), dp(14))
+            background = fundoArredondadoComBorda(
+                if (aviso) corVencido else corSuperficie,
+                20f,
+                if (aviso) Color.rgb(230, 181, 174) else corBorda
+            )
+            addView(texto(mensagem, 14f, false).apply {
+                setTextColor(if (aviso) Color.rgb(117, 48, 43) else corTexto)
+                setLineSpacing(0f, 1.15f)
+            })
+        }
+
     
 private fun abrirDashboardFinanceiro() {
         telaAtual = "dashboard"
         content.removeAllViews()
-        statusText.text = "Dashboard Financeiro"
+        val mesSelecionado = mesDashboardSelecionado ?: mesAtual
+        val vendasDashboard = vendasCache.filter { (it.data_venda ?: "").startsWith(mesSelecionado) }
+        statusText.text = "Dashboard Financeiro | $mesSelecionado"
 
         content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
+        content.addView(botaoVoltar("Selecionar Outro Mês") { abrirSelecionarMesDashboard() })
+        adicionarCardResumo("Mês Selecionado", mesSelecionado)
 
-        val totalVendido = vendasCache.sumOf { it.valor_total }
-        val totalRecebido = vendasCache.sumOf { it.total_pago }
-        val totalReceber = vendasCache.sumOf { it.saldo }
-        val clientesDebito = vendasCache
+        val totalVendido = vendasDashboard.sumOf { it.valor_total }
+        val totalRecebido = vendasDashboard.sumOf { it.total_pago }
+        val totalReceber = vendasDashboard.sumOf { it.saldo }
+        val clientesDebito = vendasDashboard
             .filter { it.saldo > 0.0 }
             .mapNotNull { it.nome_cliente }
             .distinct()
             .size
-        val vendasVencidas = vendasCache.count { estaVencida(it) }
-        val vendasMes = vendasCache.filter { (it.data_venda ?: "").startsWith(mesAtual) }
+        val vendasVencidas = vendasDashboard.count { estaVencida(it) }
 
         val linha1 = linhaBotoes()
         linha1.addView(cardDashboard("Total Vendido", moeda.format(totalVendido), 1f))
@@ -470,14 +581,37 @@ private fun abrirDashboardFinanceiro() {
 
         val linha3 = linhaBotoes()
         linha3.addView(cardDashboard("Vencidas", vendasVencidas.toString(), 1f))
-        linha3.addView(cardDashboard("Cards Do Mês", vendasMes.size.toString(), 1f))
+        linha3.addView(cardDashboard("Cards Do Mês", vendasDashboard.size.toString(), 1f))
         content.addView(linha3)
 
-        adicionarCardResumo("Vendido No Mês", moeda.format(vendasMes.sumOf { it.valor_total }))
-        adicionarCardResumo("Recebido No Mês", moeda.format(vendasMes.sumOf { it.total_pago }))
-        adicionarCardResumo("Faltante No Mês", moeda.format(vendasMes.sumOf { it.saldo }))
+        adicionarCardResumo("Vendido No Mês", moeda.format(totalVendido))
+        adicionarCardResumo("Recebido No Mês", moeda.format(totalRecebido))
+        adicionarCardResumo("Faltante No Mês", moeda.format(totalReceber))
 
         adicionarGraficoDashboard(totalVendido, totalRecebido, totalReceber)
+    }
+
+    private fun abrirSelecionarMesDashboard() {
+        val mesesDisponiveis = vendasCache
+            .mapNotNull { it.data_venda }
+            .filter { it.length >= 7 }
+            .map { it.substring(0, 7) }
+            .distinct()
+            .sortedDescending()
+
+        if (mesesDisponiveis.isEmpty()) {
+            Toast.makeText(this, "Nenhum mês encontrado.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Mês Do Dashboard")
+            .setItems(mesesDisponiveis.toTypedArray()) { _, which ->
+                mesDashboardSelecionado = mesesDisponiveis[which]
+                abrirDashboardFinanceiro()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun cardDashboard(titulo: String, valor: String, peso: Float): LinearLayout {
@@ -485,12 +619,12 @@ private fun abrirDashboardFinanceiro() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setPadding(dp(10), dp(12), dp(10), dp(12))
-            background = fundoArredondado(Color.WHITE, 24f)
+            background = fundoArredondadoComBorda(corSuperficie, 24f, corBorda)
         }
 
         card.addView(texto(titulo, 12f, false).apply {
             gravity = Gravity.CENTER
-            setTextColor(Color.rgb(100, 100, 100))
+            setTextColor(corTextoSecundario)
         })
 
         card.addView(texto(valor, if (resources.displayMetrics.widthPixels < 900) 14f else 16f, true).apply {
@@ -635,7 +769,7 @@ private fun abrirResumoMes() {
                 true
             }
         }
-        content.addView(pesquisaCliente, margemCard())
+        content.addView(campoRotulado("Cliente:", pesquisaCliente), margemCard())
 
         content.addView(botaoVoltar("Aplicar Pesquisa") {
             filtroClienteResumo = pesquisaCliente.text.toString()
@@ -671,15 +805,15 @@ private fun abrirResumoMes() {
             val temVencida = vendas.any { estaVencida(it) }
             val tudoQuitado = vendas.all { it.total_pago >= it.valor_total }
             val cor = when {
-                temVencida -> Color.rgb(255, 225, 225)
-                tudoQuitado -> Color.rgb(220, 245, 220)
-                else -> Color.WHITE
+                temVencida -> corVencido
+                tudoQuitado -> corQuitado
+                else -> corSuperficie
             }
 
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(dp(22), dp(18), dp(22), dp(18))
-                background = fundoArredondadoComBorda(cor, 26f, Color.argb(80, 150, 150, 150))
+                background = fundoArredondadoComBorda(cor, 26f, corBorda)
                 isClickable = true
                 setOnClickListener { abrirHistoricoCliente(cliente, vendas) }
             }
@@ -709,7 +843,7 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
         val resumo = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(22), dp(18), dp(22), dp(18))
-            background = fundoArredondado(Color.WHITE, 24f)
+            background = fundoArredondadoComBorda(corSuperficie, 24f, corBorda)
         }
 
         resumo.addView(texto(cliente, 20f, true))
@@ -736,9 +870,9 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
         val vencido = estaVencida(venda)
 
         val corCard = when {
-            quitado -> Color.rgb(220, 245, 220)
-            vencido -> Color.rgb(255, 225, 225)
-            else -> Color.WHITE
+            quitado -> corQuitado
+            vencido -> corVencido
+            else -> corSuperficie
         }
 
         val parcelaInfo = if ((venda.parcelas ?: 1) > 1) {
@@ -750,7 +884,7 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(22), dp(18), dp(22), dp(18))
-            background = fundoArredondadoComBorda(corCard, 24f, Color.argb(80, 150, 150, 150))
+            background = fundoArredondadoComBorda(corCard, 24f, corBorda)
             isClickable = true
             setOnClickListener { abrirDetalhesVenda(venda) }
         }
@@ -760,6 +894,7 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
         val vencimento = venda.data_vencimento ?: "-"
 
         card.addView(texto(descricao, 18f, true))
+        card.addView(etiquetaStatus(venda))
 
         val detalhes = TextView(this).apply {
             text = parcelaInfo +
@@ -769,7 +904,7 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
                     "\nPago: " + moeda.format(venda.total_pago) +
                     "\nFaltante: " + moeda.format(venda.saldo)
             textSize = 15f
-            setTextColor(Color.rgb(65, 65, 65))
+            setTextColor(corTextoSecundario)
             setPadding(0, dp(6), 0, 0)
         }
 
@@ -809,19 +944,19 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             val wrapper = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(dp(12), dp(8), dp(12), dp(8))
-                background = fundoArredondado(Color.WHITE, 22f)
+                background = fundoArredondadoComBorda(corSuperficie, 22f, corBorda)
             }
 
             wrapper.addView(texto("$label: ${moeda.format(valor)}", 13f, true))
 
             val fundo = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
-                background = fundoArredondado(Color.rgb(230, 230, 230), 12f)
+                background = fundoArredondado(Color.rgb(232, 226, 214), 12f)
             }
 
             val largura = ((resources.displayMetrics.widthPixels - dp(80)) * (valor / maxValor)).toInt().coerceAtLeast(dp(12))
             val barra = LinearLayout(this).apply {
-                background = fundoArredondado(Color.rgb(180, 180, 180), 12f)
+                background = fundoArredondado(corPrimaria, 12f)
             }
 
             fundo.addView(barra, LinearLayout.LayoutParams(largura, dp(16)))
@@ -857,7 +992,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             }
         }
 
-        content.addView(campoBusca, margemCard())
+        content.addView(campoRotulado("Pesquisa:", campoBusca), margemCard())
         content.addView(botaoVoltar("Pesquisar") {
             pesquisaGlobal = campoBusca.text.toString()
             abrirBuscaGlobal()
@@ -931,7 +1066,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     private fun sugerirImportacaoInicial() {
         AlertDialog.Builder(this)
             .setTitle("Banco SQLite Vazio")
-            .setMessage("Este aparelho ainda não possui dados locais. Deseja importar agora todos os clientes, vendas e pagamentos da planilha atual?")
+            .setView(painelMensagem("Este aparelho ainda não possui dados locais. Deseja importar agora todos os clientes, vendas e pagamentos da planilha atual?"))
             .setPositiveButton("Importar") { _, _ -> importarPlanilhaParaSqlite(false) }
             .setNegativeButton("Depois", null)
             .show()
@@ -940,7 +1075,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     private fun confirmarImportacaoPlanilha() {
         AlertDialog.Builder(this)
             .setTitle("Importar Da Planilha")
-            .setMessage("A importação substituirá os dados atuais do SQLite pelos dados da planilha. Faça um backup local antes se tiver alterações ainda não enviadas.")
+            .setView(painelMensagem("A importação substituirá os dados atuais do SQLite pelos dados da planilha. Faça um backup local antes se tiver alterações ainda não enviadas."))
             .setPositiveButton("Importar") { _, _ -> importarPlanilhaParaSqlite(true) }
             .setNegativeButton("Cancelar", null)
             .show()
@@ -949,7 +1084,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     private fun confirmarEnvioPlanilha() {
         AlertDialog.Builder(this)
             .setTitle("Enviar Para Planilha")
-            .setMessage("A planilha será substituída pela cópia atual do SQLite, mantendo os mesmos IDs de clientes, vendas e pagamentos. Continuar?")
+            .setView(painelMensagem("A planilha será substituída pela cópia atual do SQLite, mantendo os mesmos IDs de clientes, vendas e pagamentos. Continuar?"))
             .setPositiveButton("Enviar") { _, _ -> enviarSqliteParaPlanilha() }
             .setNegativeButton("Cancelar", null)
             .show()
@@ -958,7 +1093,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     private fun confirmarSincronizacao() {
         AlertDialog.Builder(this)
             .setTitle("Sincronizar Dados")
-            .setMessage("O app buscará a planilha, mesclará os registros por ID sem sobrescrever alterações locais pendentes e depois enviará a base mesclada de volta à planilha.")
+            .setView(painelMensagem("O app buscará a planilha, mesclará os registros por ID sem sobrescrever alterações locais pendentes e depois enviará a base mesclada de volta à planilha."))
             .setPositiveButton("Sincronizar") { _, _ -> sincronizarBidirecional() }
             .setNegativeButton("Cancelar", null)
             .show()
@@ -1154,40 +1289,40 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         val titlePaint = Paint().apply {
             textSize = 19f
             isFakeBoldText = true
-            color = Color.rgb(35, 35, 35)
+            color = corPrimariaEscura
             textAlign = Paint.Align.CENTER
         }
         val subtitlePaint = Paint().apply {
             textSize = 15f
             isFakeBoldText = true
-            color = Color.rgb(60, 60, 60)
+            color = corDestaque
             textAlign = Paint.Align.CENTER
         }
         val sectionPaint = Paint().apply {
             textSize = 13f
             isFakeBoldText = true
-            color = Color.rgb(45, 45, 45)
+            color = corPrimariaEscura
         }
         val labelPaint = Paint().apply {
             textSize = 10.5f
             isFakeBoldText = true
-            color = Color.rgb(65, 65, 65)
+            color = corTextoSecundario
         }
         val valuePaint = Paint().apply {
             textSize = 10.5f
-            color = Color.rgb(55, 55, 55)
+            color = corTexto
         }
         val footerPaint = Paint().apply {
             textSize = 9f
-            color = Color.rgb(110, 110, 110)
+            color = corTextoSecundario
             textAlign = Paint.Align.CENTER
         }
         val linePaint = Paint().apply {
-            color = Color.rgb(205, 205, 205)
+            color = corBorda
             strokeWidth = 1f
         }
         val softLinePaint = Paint().apply {
-            color = Color.rgb(235, 235, 235)
+            color = Color.rgb(238, 231, 220)
             strokeWidth = 1f
         }
 
@@ -1333,7 +1468,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
 
         AlertDialog.Builder(this)
             .setTitle("Deletar Card")
-            .setMessage(msg)
+            .setView(painelMensagem(msg, aviso = true))
             .setPositiveButton("Deletar") { _, _ ->
                 deletarCardVenda(venda)
             }
@@ -1363,6 +1498,9 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             hint = "Nome Do Cliente"
             textSize = 16f
             threshold = 0
+            setTextColor(corTexto)
+            setHintTextColor(corTextoSecundario)
+            backgroundTintList = android.content.res.ColorStateList.valueOf(corDestaque)
             setAdapter(ArrayAdapter(this@MainActivity, android.R.layout.simple_dropdown_item_1line, nomes))
             setOnClickListener { showDropDown() }
             setText(vendaExistente?.nome_cliente ?: "")
@@ -1391,11 +1529,11 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
         }
 
-        layout.addView(nomeCliente)
-        layout.addView(valor)
-        layout.addView(parcelas)
-        layout.addView(data)
-        layout.addView(descricao)
+        layout.addView(campoRotulado("Nome:", nomeCliente))
+        layout.addView(campoRotulado("Valor total:", valor))
+        layout.addView(campoRotulado("Parcelas:", parcelas))
+        layout.addView(campoRotulado("Data da compra:", data))
+        layout.addView(campoRotulado("Descrição:", descricao))
 
         AlertDialog.Builder(this)
             .setTitle(if (vendaExistente == null) "Nova Venda" else "Editar Card")
@@ -1477,8 +1615,8 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             setOnClickListener { abrirCalendario(this) }
         }
 
-        layout.addView(valorCorreto)
-        layout.addView(data)
+        layout.addView(campoRotulado("Valor pago correto:", valorCorreto))
+        layout.addView(campoRotulado("Data da correção:", data))
 
         AlertDialog.Builder(this)
             .setTitle("Corrigir Valor Pago")
@@ -1557,8 +1695,8 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             setOnClickListener { abrirCalendario(this) }
         }
 
-        layout.addView(valor)
-        layout.addView(data)
+        layout.addView(campoRotulado("Valor pago:", valor))
+        layout.addView(campoRotulado("Data do pagamento:", data))
 
         AlertDialog.Builder(this)
             .setTitle("Registrar Pagamento")
@@ -1685,7 +1823,7 @@ private fun criarCanalNotificacoes() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setPadding(dp(12), dp(16), dp(12), dp(16))
-            background = fundoArredondadoComBorda(Color.argb(220, 255, 255, 255), 26f, Color.argb(80, 160, 160, 160))
+            background = fundoArredondadoComBorda(corSuperficie, 26f, corBorda)
             isClickable = true
             setOnClickListener { acao() }
         }
@@ -1695,14 +1833,14 @@ private fun criarCanalNotificacoes() {
             textSize = if (resources.displayMetrics.widthPixels < 900) 17f else 19f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            setTextColor(Color.rgb(45, 45, 45))
+            setTextColor(corPrimariaEscura)
         })
 
         card.addView(TextView(this).apply {
             text = subtitulo
             textSize = 13f
             gravity = Gravity.CENTER
-            setTextColor(Color.rgb(100, 100, 100))
+            setTextColor(corDestaque)
         })
 
         val params = LinearLayout.LayoutParams(0, dp(96), peso)
@@ -1711,11 +1849,43 @@ private fun criarCanalNotificacoes() {
         return card
     }
 
+    private fun botaoOpcaoMenu(texto: String, destrutiva: Boolean, acao: () -> Unit): TextView =
+        TextView(this).apply {
+            text = texto
+            textSize = 15f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER_VERTICAL
+            setTextColor(if (destrutiva) Color.rgb(153, 55, 47) else corPrimariaEscura)
+            setPadding(dp(16), dp(13), dp(16), dp(13))
+            background = fundoArredondadoComBorda(
+                if (destrutiva) corVencido else corSuperficie,
+                18f,
+                if (destrutiva) Color.rgb(230, 181, 174) else corBorda
+            )
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { acao() }
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, dp(4), 0, dp(4)) }
+        }
+
     private fun botaoVoltar(texto: String, acao: () -> Unit): Button = Button(this).apply {
         text = texto
         textSize = 14f
-        setTextColor(Color.rgb(55, 55, 55))
-        background = fundoArredondadoComBorda(Color.argb(220, 255, 255, 255), 22f, Color.argb(90, 150, 150, 150))
+        isAllCaps = false
+        val secundaria = texto.startsWith("Voltar", ignoreCase = true) ||
+                texto.startsWith("Limpar", ignoreCase = true) ||
+                texto.startsWith("Cancelar", ignoreCase = true)
+        setTextColor(if (secundaria) corPrimaria else Color.WHITE)
+        background = if (secundaria) {
+            fundoArredondadoComBorda(corSuperficie, 22f, corBorda)
+        } else {
+            fundoArredondado(corPrimaria, 22f)
+        }
+        minHeight = dp(50)
+        setPadding(dp(16), dp(8), dp(16), dp(8))
         setOnClickListener { acao() }
     }
 
@@ -1723,9 +1893,9 @@ private fun criarCanalNotificacoes() {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(12), dp(16), dp(12))
-            background = fundoArredondado(Color.WHITE, 22f)
+            background = fundoArredondadoComBorda(corSuperficie, 22f, corBorda)
         }
-        card.addView(texto(titulo, 13f, false).apply { setTextColor(Color.rgb(120, 120, 120)) })
+        card.addView(texto(titulo, 13f, false).apply { setTextColor(corTextoSecundario) })
         card.addView(texto(valor, if (resources.displayMetrics.widthPixels < 900) 18f else 21f, true))
         content.addView(card, margemCardResumo())
     }
@@ -1738,15 +1908,40 @@ private fun criarCanalNotificacoes() {
     private fun texto(valor: String, tamanho: Float, negrito: Boolean): TextView = TextView(this).apply {
         text = valor
         textSize = tamanho
-        setTextColor(Color.rgb(45, 45, 45))
+        setTextColor(corTexto)
         if (negrito) typeface = Typeface.DEFAULT_BOLD
+    }
+
+    private fun campoRotulado(rotulo: String, input: EditText): LinearLayout = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(12), dp(9), dp(12), dp(5))
+        background = fundoArredondadoComBorda(corSuperficie, 18f, corBorda)
+
+        addView(texto(rotulo, 12f, true).apply {
+            setTextColor(corPrimariaEscura)
+            setPadding(dp(2), 0, dp(2), 0)
+        })
+
+        addView(
+            input,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { setMargins(0, dp(5), 0, dp(5)) }
     }
 
     private fun campo(hint: String): EditText = EditText(this).apply {
         this.hint = hint
         textSize = 16f
-        setTextColor(Color.rgb(45,45,45))
-        setHintTextColor(Color.rgb(130,130,130))
+        setTextColor(corTexto)
+        setHintTextColor(corTextoSecundario)
+        backgroundTintList = android.content.res.ColorStateList.valueOf(corDestaque)
     }
 
     private fun margemCard(): LinearLayout.LayoutParams =

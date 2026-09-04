@@ -8,5 +8,7 @@ drawable watermark_alejoias
 mipmap alejoias
 mipmap ic_launcher
 mipmap ic_launcher_round
+style AleJoiasAlertDialog
+style AleJoiasDialogShape
 style AppTheme
 xml file_paths

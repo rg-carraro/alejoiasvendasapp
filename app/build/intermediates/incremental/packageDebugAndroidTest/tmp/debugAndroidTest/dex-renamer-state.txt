@@ -1,4 +1,4 @@
-#Fri Sep 04 10:50:27 BRT 2026
-base.0=C\:\\Users\\rgcar\\Downloads\\projetos\\aleajoiasvendas\\app\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex
+#Fri Sep 04 14:49:05 BRT 2026
+base.0=C\:\\Users\\rgcar\\git\\alejoiasvendasapp\\app\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex
 path.0=0/classes.dex
 renamed.0=classes.dex
