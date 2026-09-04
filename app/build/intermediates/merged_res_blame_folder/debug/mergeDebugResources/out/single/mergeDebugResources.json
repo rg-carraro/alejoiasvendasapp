@@ -1,0 +1,82 @@
+[
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/xml_file_paths.xml.flat",
+        "source": "com.example.controlevendas.app-main-33:/xml/file_paths.xml"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-anydpi-v26_alejoias.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-anydpi-v26/alejoias.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-xxxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-mdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/drawable-nodpi_ic_launcher_foreground.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/drawable-nodpi/ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/drawable_watermark_alejoias.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/drawable/watermark_alejoias.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/drawable_alejoias.jpg.flat",
+        "source": "com.example.controlevendas.app-main-33:/drawable/alejoias.jpg"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-xxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/drawable_ic_launcher_foreground.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/drawable/ic_launcher_foreground.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.example.controlevendas.app-main-33:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/drawable_ic_diamond.xml.flat",
+        "source": "com.example.controlevendas.app-main-33:/drawable/ic_diamond.xml"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-hdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.example.controlevendas.app-debug-31:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "com.example.controlevendas.app-main-33:/mipmap-xhdpi/ic_launcher_round.png"
+    }
+]
