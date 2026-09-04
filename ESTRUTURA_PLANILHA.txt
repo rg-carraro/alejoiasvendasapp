@@ -1,0 +1,31 @@
+ESTRUTURA DA PLANILHA - VENCIMENTO E PARCELAS
+
+CLIENTES:
+A: id_cliente
+B: nome
+
+VENDAS:
+A: id_venda
+B: id_cliente
+C: descricao
+D: data_venda
+E: data_vencimento
+F: valor_total
+G: parcela_atual
+H: parcelas
+I: id_venda_pai
+
+PAGAMENTOS:
+A: id_pagamento
+B: id_venda
+C: data_pagamento
+D: valor_pago
+
+REGRAS:
+- Toda venda tem vencimento em 30 dias após a data da compra.
+- Venda parcelada divide o valor total pela quantidade de parcelas.
+- Exemplo: 3 parcelas = vencimentos em 30, 60 e 90 dias.
+- Card verde: quitado.
+- Card vermelho: vencido e ainda não quitado.
+- Card branco: ainda não venceu.
+- Relatório possui opção de período personalizado.

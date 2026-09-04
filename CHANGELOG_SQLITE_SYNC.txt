@@ -1,0 +1,23 @@
+AleJoias Vendas 2.0 SQLite Sync
+
+IMPLEMENTADO
+- SQLite local como fonte principal.
+- Mantidos IDs da estrutura da planilha.
+- Importação completa Planilha -> SQLite.
+- Envio completo SQLite -> Planilha.
+- Sincronização/mesclagem por IDs com preferência para alterações locais pendentes.
+- Exportação CSV existente mantida.
+- Backup real do arquivo .db e compartilhamento.
+- Correção do índice duplicado no menu do card/WhatsApp.
+- Correção do nome do campo data_pagamento.
+- Remoção do SharedPreferences usado como paliativo da data de pagamento.
+- Correção de valor pago agora aceita redução ou aumento.
+- Operações do dia a dia funcionam offline.
+
+BACKEND
+- AppsScript_Codigo.gs atualizado com sync_export e sync_upload.
+- Estrutura de abas e IDs mantida.
+
+OBSERVAÇÃO DE BUILD
+- O código foi preparado para Android Studio.
+- Não foi possível executar o Gradle completo neste ambiente porque ele não possui acesso de rede para baixar a distribuição/dependências do Gradle.
