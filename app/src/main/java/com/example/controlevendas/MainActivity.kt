@@ -77,6 +77,8 @@ class MainActivity : AppCompatActivity() {
 
     private var vendasCache: List<VendaRelatorio> = emptyList()
     private var telaAtual = "menu"
+    private var origemDetalheFinanceiro = "dashboard"
+    private var metricaDetalheFinanceiro = "vendido"
     private var mesResumoSelecionado: String? = null
     private var mesDashboardSelecionado: String? = null
 
@@ -104,8 +106,8 @@ class MainActivity : AppCompatActivity() {
                 when (telaAtual) {
                     "vendas" -> abrirListaVendas()
                     "dashboard" -> abrirDashboardFinanceiro()
-                    "dashboard_vendido" -> abrirDetalhamentoDashboard(false)
-                    "dashboard_recebido" -> abrirDetalhamentoDashboard(true)
+                    "financeiro_detalhe" ->
+                        abrirDetalhamentoFinanceiro(origemDetalheFinanceiro, metricaDetalheFinanceiro)
                     "resumo_clientes" -> abrirResumoClientes()
                     "resumo_periodo" -> abrirResumoPeriodo()
                     "resumo_mes" -> abrirResumoMes()
@@ -136,7 +138,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when (telaAtual) {
-            "dashboard_vendido", "dashboard_recebido",
+            "financeiro_detalhe" -> voltarDetalhamentoFinanceiro()
             "resumo_periodo", "resumo_mes" -> abrirDashboardFinanceiro()
             "menu" -> super.onBackPressed()
             else -> abrirMenuPrincipal()
@@ -255,6 +257,27 @@ class MainActivity : AppCompatActivity() {
         content.removeAllViews()
         statusText.text = "Menu Principal"
 
+        content.addView(TextView(this).apply {
+            text = "⋮"
+            textSize = 30f
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            setTextColor(corPrimariaEscura)
+            contentDescription = "Mais opções"
+            setPadding(dp(20), dp(4), dp(20), dp(4))
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { ancora ->
+                PopupMenu(this@MainActivity, ancora).apply {
+                    menu.add("Dados e sincronização")
+                    setOnMenuItemClickListener {
+                        abrirBackupLocal()
+                        true
+                    }
+                    show()
+                }
+            }
+        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52)))
+
         val linha1 = linhaBotoes()
         linha1.addView(botaoQuadrado("Vendas", "Lista", 1f) { abrirListaVendas() })
         linha1.addView(botaoQuadrado("Nova", "Venda", 1f) { abrirDialogVenda(null) })
@@ -265,9 +288,7 @@ class MainActivity : AppCompatActivity() {
         linha2.addView(botaoQuadrado("Clientes", "Histórico", 1f) { abrirResumoClientes() })
         content.addView(linha2)
 
-        val linha3 = linhaBotoes()
-        linha3.addView(botaoQuadrado("Dados", "Sync", 1f) { abrirBackupLocal() })
-        content.addView(linha3)
+
     }
 
     private fun adicionarDashboardCompacto() {
@@ -638,21 +659,29 @@ private fun abrirDashboardFinanceiro() {
 
         val linha1 = linhaBotoes()
         linha1.addView(cardDashboard("Total Vendido", moeda.format(totalVendido), 1f) {
-            abrirDetalhamentoDashboard(false)
+            abrirDetalhamentoFinanceiro("dashboard", "vendido")
         })
         linha1.addView(cardDashboard("Total Recebido", moeda.format(totalRecebido), 1f) {
-            abrirDetalhamentoDashboard(true)
+            abrirDetalhamentoFinanceiro("dashboard", "recebido")
         })
         content.addView(linha1)
 
         val linha2 = linhaBotoes()
-        linha2.addView(cardDashboard("A Receber", moeda.format(totalReceber), 1f))
-        linha2.addView(cardDashboard("Clientes Débito", clientesDebito.toString(), 1f))
+        linha2.addView(cardDashboard("A Receber", moeda.format(totalReceber), 1f) {
+            abrirDetalhamentoFinanceiro("dashboard", "faltante")
+        })
+        linha2.addView(cardDashboard("Clientes Débito", clientesDebito.toString(), 1f) {
+            abrirDetalhamentoFinanceiro("dashboard", "clientes_debito")
+        })
         content.addView(linha2)
 
         val linha3 = linhaBotoes()
-        linha3.addView(cardDashboard("Vencidas", vendasVencidas.toString(), 1f))
-        linha3.addView(cardDashboard("Cards Do Mês", vendasDashboard.size.toString(), 1f))
+        linha3.addView(cardDashboard("Vencidas", vendasVencidas.toString(), 1f) {
+            abrirDetalhamentoFinanceiro("dashboard", "vencidos")
+        })
+        linha3.addView(cardDashboard("Cards Do Mês", vendasDashboard.size.toString(), 1f) {
+            abrirDetalhamentoFinanceiro("dashboard", "todos")
+        })
         content.addView(linha3)
 
         adicionarGraficoDashboard(totalVendido, totalRecebido, totalReceber)
@@ -666,35 +695,101 @@ private fun abrirDashboardFinanceiro() {
         content.addView(relatorios)
         content.addView(botaoVoltar("Resumo Por Cliente") { abrirResumoClientes() })
 
-        adicionarCardResumo("Quantidade De Cards (Geral)", vendasCache.size.toString())
-        adicionarCardResumo("Cards Em Aberto (Geral)", vendasCache.count { it.saldo > 0.0 }.toString())
-        adicionarCardResumo("Cards Vencidos (Geral)", vendasCache.count { estaVencida(it) }.toString())
-        adicionarCardResumo("Cards Quitados (Geral)", vendasCache.count { it.total_pago >= it.valor_total && it.valor_total > 0.0 }.toString())
-        adicionarCardResumo("Total Vendido (Geral)", moeda.format(vendasCache.sumOf { it.valor_total }))
-        adicionarCardResumo("Total Recebido (Geral)", moeda.format(vendasCache.sumOf { it.total_pago }))
-        adicionarCardResumo("Saldo Faltante Total", moeda.format(vendasCache.sumOf { it.saldo }))
+        adicionarCardResumo("Quantidade De Cards (Geral)", vendasCache.size.toString()) {
+            abrirDetalhamentoFinanceiro("geral", "todos")
+        }
+        adicionarCardResumo("Cards Em Aberto (Geral)", vendasCache.count { it.saldo > 0.0 }.toString()) {
+            abrirDetalhamentoFinanceiro("geral", "abertos")
+        }
+        adicionarCardResumo("Cards Vencidos (Geral)", vendasCache.count { estaVencida(it) }.toString()) {
+            abrirDetalhamentoFinanceiro("geral", "vencidos")
+        }
+        adicionarCardResumo("Cards Quitados (Geral)", vendasCache.count { it.total_pago >= it.valor_total && it.valor_total > 0.0 }.toString()) {
+            abrirDetalhamentoFinanceiro("geral", "quitados")
+        }
+        adicionarCardResumo("Total Vendido (Geral)", moeda.format(vendasCache.sumOf { it.valor_total })) {
+            abrirDetalhamentoFinanceiro("geral", "vendido")
+        }
+        adicionarCardResumo("Total Recebido (Geral)", moeda.format(vendasCache.sumOf { it.total_pago })) {
+            abrirDetalhamentoFinanceiro("geral", "recebido")
+        }
+        adicionarCardResumo("Saldo Faltante Total", moeda.format(vendasCache.sumOf { it.saldo })) {
+            abrirDetalhamentoFinanceiro("geral", "faltante")
+        }
         content.addView(botaoVoltar("Exportar Excel/CSV") { exportarCsvResumo(vendasCache, "resumo_alejoias.csv") })
         content.addView(botaoVoltar("Gerar PDF Do Resumo") { gerarPdfResumo(vendasCache, "resumo_alejoias.pdf") })
     }
 
-    private fun abrirDetalhamentoDashboard(recebido: Boolean) {
-        telaAtual = if (recebido) "dashboard_recebido" else "dashboard_vendido"
+    private fun abrirDetalhamentoFinanceiro(origem: String, metrica: String) {
+        origemDetalheFinanceiro = origem
+        metricaDetalheFinanceiro = metrica
+        telaAtual = "financeiro_detalhe"
         content.removeAllViews()
-        val mes = mesDashboardSelecionado ?: mesAtual
-        val vendasMes = vendasCache
-            .filter { (it.data_venda ?: "").startsWith(mes) }
-            .sortedByDescending { it.data_vencimento ?: "" }
-        val lista = if (recebido) vendasMes.filter { it.total_pago > 0.0 } else vendasMes
-        val titulo = if (recebido) "Recebido nas vendas do mês" else "Vendido no mês"
-        val total = if (recebido) lista.sumOf { it.total_pago } else lista.sumOf { it.valor_total }
-        statusText.text = "$titulo | $mes"
-        content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
-        adicionarCardResumo(titulo, moeda.format(total))
-        content.addView(texto("$mes • ${lista.size} cards", 14f, false), margemCard())
+
+        val base = when (origem) {
+            "dashboard" -> vendasCache.filter {
+                (it.data_venda ?: "").startsWith(mesDashboardSelecionado ?: mesAtual)
+            }
+            "mensal" -> vendasCache.filter {
+                (it.data_venda ?: "").startsWith(mesResumoSelecionado ?: mesAtual)
+            }
+            "periodo" -> vendasCache.filter { venda ->
+                val data = venda.data_venda ?: ""
+                (relatorioInicio?.let { data >= it } ?: true) &&
+                    (relatorioFim?.let { data <= it } ?: true)
+            }
+            else -> vendasCache
+        }
+
+        val lista = base.filter { venda ->
+            when (metrica) {
+                "recebido" -> venda.total_pago > 0.0
+                "faltante", "abertos", "clientes_debito" -> venda.saldo > 0.0
+                "vencidos" -> estaVencida(venda)
+                "quitados" -> venda.total_pago >= venda.valor_total && venda.valor_total > 0.0
+                else -> true
+            }
+        }.sortedByDescending { it.data_vencimento ?: "" }
+
+        val titulo = when (metrica) {
+            "vendido" -> "Total vendido"
+            "recebido" -> "Total recebido"
+            "faltante" -> "Saldo a receber"
+            "abertos" -> "Cards em aberto"
+            "vencidos" -> "Cards vencidos"
+            "quitados" -> "Cards quitados"
+            "clientes_debito" -> "Clientes em débito"
+            else -> "Todos os cards"
+        }
+        val periodo = when (origem) {
+            "dashboard" -> mesDashboardSelecionado ?: mesAtual
+            "mensal" -> mesResumoSelecionado ?: mesAtual
+            "periodo" -> "${relatorioInicio ?: "..."} até ${relatorioFim ?: "..."}"
+            else -> "Todos os períodos"
+        }
+        val total = when (metrica) {
+            "vendido" -> moeda.format(lista.sumOf { it.valor_total })
+            "recebido" -> moeda.format(lista.sumOf { it.total_pago })
+            "faltante" -> moeda.format(lista.sumOf { it.saldo })
+            "clientes_debito" -> lista.mapNotNull { it.nome_cliente }.distinct().size.toString()
+            else -> lista.size.toString()
+        }
+        statusText.text = "$titulo | $periodo"
+        content.addView(botaoVoltar("Voltar Ao Relatório") { voltarDetalhamentoFinanceiro() })
+        adicionarCardResumo(titulo, total)
+        content.addView(texto("$periodo • ${lista.size} cards", 14f, false), margemCard())
         if (lista.isEmpty()) {
-            content.addView(texto("Nenhum card encontrado nesse mês.", 16f, false))
+            content.addView(texto("Nenhum card encontrado.", 16f, false))
         } else {
             lista.forEach { adicionarCardVenda(it) }
+        }
+    }
+
+    private fun voltarDetalhamentoFinanceiro() {
+        when (origemDetalheFinanceiro) {
+            "mensal" -> abrirResumoMes()
+            "periodo" -> abrirResumoPeriodo()
+            else -> abrirDashboardFinanceiro()
         }
     }
 
@@ -781,11 +876,21 @@ private fun abrirDashboardFinanceiro() {
         })
 
         content.addView(texto("Período: ${relatorioInicio ?: "..."} até ${relatorioFim ?: "..."}", 15f, true))
-        adicionarCardResumo("Quantidade De Cards", lista.size.toString())
-        adicionarCardResumo("Cards Vencidos", lista.count { estaVencida(it) }.toString())
-        adicionarCardResumo("Total Vendido", moeda.format(lista.sumOf { it.valor_total }))
-        adicionarCardResumo("Total Recebido", moeda.format(lista.sumOf { it.total_pago }))
-        adicionarCardResumo("Saldo Faltante", moeda.format(lista.sumOf { it.saldo }))
+        adicionarCardResumo("Quantidade De Cards", lista.size.toString()) {
+            abrirDetalhamentoFinanceiro("periodo", "todos")
+        }
+        adicionarCardResumo("Cards Vencidos", lista.count { estaVencida(it) }.toString()) {
+            abrirDetalhamentoFinanceiro("periodo", "vencidos")
+        }
+        adicionarCardResumo("Total Vendido", moeda.format(lista.sumOf { it.valor_total })) {
+            abrirDetalhamentoFinanceiro("periodo", "vendido")
+        }
+        adicionarCardResumo("Total Recebido", moeda.format(lista.sumOf { it.total_pago })) {
+            abrirDetalhamentoFinanceiro("periodo", "recebido")
+        }
+        adicionarCardResumo("Saldo Faltante", moeda.format(lista.sumOf { it.saldo })) {
+            abrirDetalhamentoFinanceiro("periodo", "faltante")
+        }
     }
 
     
@@ -802,13 +907,27 @@ private fun abrirResumoMes() {
         content.addView(botaoVoltar("Selecionar Outro Mês") { abrirSelecionarMesResumo() })
 
         adicionarCardResumo("Mês Selecionado", mesSelecionado)
-        adicionarCardResumo("Quantidade De Cards", vendasMes.size.toString())
-        adicionarCardResumo("Cards Em Aberto", vendasMes.count { it.saldo > 0.0 }.toString())
-        adicionarCardResumo("Cards Vencidos", vendasMes.count { estaVencida(it) }.toString())
-        adicionarCardResumo("Cards Quitados", vendasMes.count { it.total_pago >= it.valor_total && it.valor_total > 0.0 }.toString())
-        adicionarCardResumo("Total Vendido No Mês", moeda.format(vendasMes.sumOf { it.valor_total }))
-        adicionarCardResumo("Total Recebido No Mês", moeda.format(vendasMes.sumOf { it.total_pago }))
-        adicionarCardResumo("Faltante Do Mês", moeda.format(vendasMes.sumOf { it.saldo }))
+        adicionarCardResumo("Quantidade De Cards", vendasMes.size.toString()) {
+            abrirDetalhamentoFinanceiro("mensal", "todos")
+        }
+        adicionarCardResumo("Cards Em Aberto", vendasMes.count { it.saldo > 0.0 }.toString()) {
+            abrirDetalhamentoFinanceiro("mensal", "abertos")
+        }
+        adicionarCardResumo("Cards Vencidos", vendasMes.count { estaVencida(it) }.toString()) {
+            abrirDetalhamentoFinanceiro("mensal", "vencidos")
+        }
+        adicionarCardResumo("Cards Quitados", vendasMes.count { it.total_pago >= it.valor_total && it.valor_total > 0.0 }.toString()) {
+            abrirDetalhamentoFinanceiro("mensal", "quitados")
+        }
+        adicionarCardResumo("Total Vendido No Mês", moeda.format(vendasMes.sumOf { it.valor_total })) {
+            abrirDetalhamentoFinanceiro("mensal", "vendido")
+        }
+        adicionarCardResumo("Total Recebido No Mês", moeda.format(vendasMes.sumOf { it.total_pago })) {
+            abrirDetalhamentoFinanceiro("mensal", "recebido")
+        }
+        adicionarCardResumo("Faltante Do Mês", moeda.format(vendasMes.sumOf { it.saldo })) {
+            abrirDetalhamentoFinanceiro("mensal", "faltante")
+        }
 
         content.addView(botaoVoltar("Gerar PDF Deste Mês") {
             gerarPdfResumo(vendasMes, "resumo_${mesSelecionado}.pdf")

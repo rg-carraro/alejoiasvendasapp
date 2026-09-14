@@ -26,7 +26,9 @@ clientes e pagamentos; fotos não são transferidas entre aparelhos.
 O menu principal reúne dashboard, resumo geral, relatórios por período/mês/cliente
 e exportações em **Financeiro / Relatórios**. A pesquisa da lista de vendas
 também encontra cliente, descrição, datas e valor; a tela separada de busca
-global foi removida.
+global foi removida. **Dados e sincronização** fica no botão de opções
+`⋮` do menu principal. Os indicadores financeiros do dashboard e dos
+resumos geral, mensal e por período abrem a lista de cards correspondente.
 
 ## Arquitetura atual
 

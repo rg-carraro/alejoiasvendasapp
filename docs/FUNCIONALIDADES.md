@@ -46,12 +46,14 @@ sincronização com a planilha.
 - resumo por período;
 - resumo mensal;
 - resumo por cliente;
-- dashboard com detalhamento dos cards vendidos e pagos do mês selecionado;
+- dashboard e resumos geral, mensal e por período com indicadores clicáveis
+  que abrem os cards correspondentes;
 - histórico de cliente;
 - pesquisa por cliente, descrição, datas e valor integrada à lista de vendas.
 
 Dashboard, resumo geral, relatórios por período/mês/cliente, PDFs e CSVs
 ficam reunidos no acesso **Financeiro / Relatórios** do menu principal.
+Dados e sincronização ficam no botão de opções `⋮` do menu principal.
 
 ## Saídas
 - PDFs;
