@@ -37,6 +37,15 @@ ou:
 - `data_pagamento`
 - `valor_pago`
 
+### FOTOS_VENDA (somente SQLite local)
+- `id_foto`: identificador próprio da foto;
+- `id_venda_pai`: associa a imagem a todas as parcelas da venda;
+- `imagem`: JPEG comprimido em BLOB.
+
+A migração de `DB_VERSION 1` para `2` cria somente esta tabela e seu índice,
+sem alterar CLIENTES, VENDAS, PAGAMENTOS ou os IDs compartilhados. O backup
+SQLite contém as fotos; a planilha não armazena imagens.
+
 ## Regra de compatibilidade
 
 Os mesmos identificadores devem ser preservados no SQLite e na planilha para permitir sincronização e evitar duplicidades.

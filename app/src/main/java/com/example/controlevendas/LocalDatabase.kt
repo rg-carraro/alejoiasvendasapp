@@ -14,7 +14,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
 
     companion object {
         const val DB_NAME = "alejoias_vendas.db"
-        private const val DB_VERSION = 1
+        private const val DB_VERSION = 2
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -51,6 +51,8 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
         db.execSQL("CREATE INDEX idx_vendas_cliente ON VENDAS(id_cliente)")
         db.execSQL("CREATE INDEX idx_pagamentos_venda ON PAGAMENTOS(id_venda)")
 
+        criarTabelaFotos(db)
+
         // Metadados internos de sincronização. Não fazem parte da planilha.
         db.execSQL("""
             CREATE TABLE SYNC_DIRTY (
@@ -69,7 +71,30 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Primeira versão local. Futuras migrações devem ser adicionadas aqui.
+        if (oldVersion < 2) criarTabelaFotos(db)
+    }
+
+    private fun criarTabelaFotos(db: SQLiteDatabase) {
+        db.execSQL("""
+            CREATE TABLE FOTOS_VENDA (
+                id_foto TEXT PRIMARY KEY,
+                id_venda_pai TEXT NOT NULL,
+                imagem BLOB NOT NULL
+            )
+        """.trimIndent())
+        db.execSQL("CREATE INDEX idx_fotos_venda_pai ON FOTOS_VENDA(id_venda_pai)")
+    }
+
+    fun getFotosVenda(idVendaPai: String?): List<ByteArray> {
+        if (idVendaPai.isNullOrBlank()) return emptyList()
+        val fotos = mutableListOf<ByteArray>()
+        readableDatabase.query(
+            "FOTOS_VENDA", arrayOf("imagem"), "id_venda_pai=?",
+            arrayOf(idVendaPai), null, null, "rowid"
+        ).use { c ->
+            while (c.moveToNext()) fotos += c.getBlob(0)
+        }
+        return fotos
     }
 
     fun isEmpty(): Boolean {
@@ -118,7 +143,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
         return result
     }
 
-    fun novaVenda(request: NovaVendaRequest): String {
+    fun novaVenda(request: NovaVendaRequest, fotos: List<ByteArray>): String {
         val db = writableDatabase
         db.beginTransaction()
         try {
@@ -145,6 +170,13 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
                 }
                 db.insertOrThrow("VENDAS", null, cv)
                 markDirty(db, "VENDAS", idVenda)
+            }
+            fotos.forEach { imagem ->
+                db.insertOrThrow("FOTOS_VENDA", null, ContentValues().apply {
+                    put("id_foto", java.util.UUID.randomUUID().toString())
+                    put("id_venda_pai", idPai)
+                    put("imagem", imagem)
+                })
             }
             db.setTransactionSuccessful()
             return idPai
@@ -227,7 +259,16 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
             }
             pagamentos.forEach { markDeletion(db, "PAGAMENTOS", it) }
             db.delete("PAGAMENTOS", "id_venda=?", arrayOf(idVenda))
+            var idPai: String? = null
+            db.query("VENDAS", arrayOf("id_venda_pai"), "id_venda=?", arrayOf(idVenda), null, null, null).use { c ->
+                if (c.moveToFirst()) idPai = c.getString(0)
+            }
             db.delete("VENDAS", "id_venda=?", arrayOf(idVenda))
+            if (!idPai.isNullOrBlank()) {
+                db.rawQuery("SELECT 1 FROM VENDAS WHERE id_venda_pai=? LIMIT 1", arrayOf(idPai)).use { c ->
+                    if (!c.moveToFirst()) db.delete("FOTOS_VENDA", "id_venda_pai=?", arrayOf(idPai))
+                }
+            }
             markDeletion(db, "VENDAS", idVenda)
             db.setTransactionSuccessful()
         } finally {

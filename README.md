@@ -11,6 +11,14 @@ permanece em SQLite e a sincronização com Google Planilhas é opcional.
 Consulte [docs/COMPARACAO_COPIAS.md](docs/COMPARACAO_COPIAS.md) para o histórico
 da conciliação entre as duas pastas.
 
+## Fotos da venda
+
+Uma nova venda pode incluir fotos do produto, mas elas são opcionais. É possível escolher várias
+imagens da galeria ou tirar fotos com a câmera. As fotos aparecem nos detalhes
+de cada parcela e ficam no SQLite local, inclusive no backup do banco. A
+sincronização com Google Planilhas continua enviando apenas os dados de vendas,
+clientes e pagamentos; fotos não são transferidas entre aparelhos.
+
 ## Arquitetura atual
 
 - SQLite local (`alejoias_vendas.db`) como fonte operacional principal;

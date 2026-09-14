@@ -11,6 +11,9 @@ import androidx.core.app.NotificationCompat
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.graphics.Canvas
 import androidx.core.content.FileProvider
 import java.io.File
@@ -27,6 +30,8 @@ import android.text.InputType
 import android.view.Gravity
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.ByteArrayOutputStream
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -51,6 +56,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var content: LinearLayout
     private lateinit var statusText: TextView
     private lateinit var localDb: LocalDatabase
+    private val fotosRascunho = mutableListOf<ByteArray>()
+    private var listaFotosRascunho: LinearLayout? = null
+    private var arquivoCamera: File? = null
+
+    private val selecionarFotos = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+        if (listaFotosRascunho != null) {
+            uris.forEach { adicionarFotoRascunho(it) }
+        }
+    }
+    private val fotografarProduto = registerForActivityResult(ActivityResultContracts.TakePicture()) { sucesso ->
+        val arquivo = arquivoCamera
+        arquivoCamera = null
+        if (sucesso && arquivo != null && listaFotosRascunho != null) {
+            adicionarFotoRascunho(Uri.fromFile(arquivo))
+        }
+        arquivo?.delete()
+    }
 
     private var vendasCache: List<VendaRelatorio> = emptyList()
     private var telaAtual = "menu"
@@ -502,13 +524,29 @@ class MainActivity : AppCompatActivity() {
         painel.addView(linhaDetalhe("Valor pago", moeda.format(venda.total_pago), true))
         painel.addView(linhaDetalhe("Saldo faltante", moeda.format(venda.saldo), true))
 
+        val fotos = localDb.getFotosVenda(venda.id_venda_pai)
+        if (fotos.isNotEmpty()) {
+            painel.addView(texto("Fotos do produto:", 14f, true))
+            val faixa = HorizontalScrollView(this)
+            val miniaturas = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            fotos.forEach { bytes ->
+                miniaturas.addView(ImageView(this).apply {
+                    setImageBitmap(decodificarMiniatura(bytes))
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    setOnClickListener { mostrarFoto(bytes) }
+                }, LinearLayout.LayoutParams(dp(96), dp(96)).apply { setMargins(0, dp(6), dp(8), dp(6)) })
+            }
+            faixa.addView(miniaturas)
+            painel.addView(faixa)
+        }
+
         if (venda.total_pago > 0.0) {
             painel.addView(linhaDetalhe("Data do pagamento", dataPagamentoLocal(venda)))
         }
 
         AlertDialog.Builder(this)
             .setTitle("Detalhes Da Venda")
-            .setView(painel)
+            .setView(ScrollView(this).apply { addView(painel) })
             .setPositiveButton("Registrar Pagamento") { _, _ -> abrirDialogPagamento(venda) }
             .setNegativeButton("Fechar", null)
             .show()
@@ -1487,6 +1525,8 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     }
 
     private fun abrirDialogVenda(vendaExistente: VendaRelatorio?) {
+        fotosRascunho.clear()
+        listaFotosRascunho = null
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(28), dp(8), dp(28), dp(8))
@@ -1535,9 +1575,29 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         layout.addView(campoRotulado("Data da compra:", data))
         layout.addView(campoRotulado("Descrição:", descricao))
 
+        if (vendaExistente == null) {
+            layout.addView(texto("Fotos do produto (opcional):", 14f, true))
+            layout.addView(botaoVoltar("Escolher da galeria") {
+                selecionarFotos.launch("image/*")
+            })
+            layout.addView(botaoVoltar("Abrir câmera") {
+                try {
+                    val arquivo = File.createTempFile("produto_", ".jpg", cacheDir)
+                    arquivoCamera = arquivo
+                    val uri = FileProvider.getUriForFile(this, "${packageName}.provider", arquivo)
+                    fotografarProduto.launch(uri)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Não foi possível abrir a câmera: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            })
+            listaFotosRascunho = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            layout.addView(listaFotosRascunho)
+        }
+
+        val scroll = ScrollView(this).apply { addView(layout) }
         AlertDialog.Builder(this)
             .setTitle(if (vendaExistente == null) "Nova Venda" else "Editar Card")
-            .setView(layout)
+            .setView(scroll)
             .setPositiveButton("Salvar", null)
             .setNegativeButton("Cancelar", null)
             .create()
@@ -1561,7 +1621,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
                                 data_venda = data.text.toString()
                             )
                             try {
-                                localDb.novaVenda(request)
+                                localDb.novaVenda(request, fotosRascunho)
                                 Toast.makeText(this@MainActivity, "Venda cadastrada no SQLite.", Toast.LENGTH_SHORT).show()
                                 carregarRelatorio { abrirListaVendas() }
                             } catch (e: Exception) {
@@ -1590,8 +1650,99 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
                         dismiss()
                     }
                 }
+                setOnDismissListener {
+                    listaFotosRascunho = null
+                    fotosRascunho.clear()
+                    arquivoCamera?.delete()
+                    arquivoCamera = null
+                }
             }
             .show()
+    }
+
+    private fun adicionarFotoRascunho(uri: Uri) {
+        try {
+            val bytes = comprimirFoto(uri)
+            fotosRascunho += bytes
+            atualizarFotosRascunho()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Não foi possível adicionar a foto: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun comprimirFoto(uri: Uri): ByteArray {
+        val limites = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        contentResolver.openInputStream(uri).use { entrada ->
+            requireNotNull(entrada) { "Imagem indisponível." }
+            BitmapFactory.decodeStream(entrada, null, limites)
+        }
+        require(limites.outWidth > 0 && limites.outHeight > 0) { "Arquivo de imagem inválido." }
+        val opcoes = BitmapFactory.Options()
+        while (limites.outWidth / opcoes.inSampleSize > 1600 || limites.outHeight / opcoes.inSampleSize > 1600) {
+            opcoes.inSampleSize *= 2
+        }
+        val original = contentResolver.openInputStream(uri).use { entrada ->
+            requireNotNull(entrada) { "Imagem indisponível." }
+            BitmapFactory.decodeStream(entrada, null, opcoes)
+        } ?: error("Não foi possível ler a imagem.")
+        val orientacao = if (Build.VERSION.SDK_INT >= 24) {
+            contentResolver.openInputStream(uri).use { entrada ->
+                entrada?.let { ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL) }
+                    ?: ExifInterface.ORIENTATION_NORMAL
+            }
+        } else ExifInterface.ORIENTATION_NORMAL
+        val graus = when (orientacao) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+            else -> 0f
+        }
+        val bitmap = if (graus != 0f) Bitmap.createBitmap(
+            original, 0, 0, original.width, original.height, Matrix().apply { postRotate(graus) }, true
+        ) else original
+        val saida = ByteArrayOutputStream()
+        try {
+            check(bitmap.compress(Bitmap.CompressFormat.JPEG, 85, saida)) { "Falha ao comprimir imagem." }
+            return saida.toByteArray()
+        } finally {
+            if (bitmap !== original) original.recycle()
+            bitmap.recycle()
+        }
+    }
+
+    private fun atualizarFotosRascunho() {
+        val lista = listaFotosRascunho ?: return
+        lista.removeAllViews()
+        fotosRascunho.forEachIndexed { indice, bytes ->
+            val linha = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+            linha.addView(ImageView(this).apply {
+                setImageBitmap(decodificarMiniatura(bytes))
+                scaleType = ImageView.ScaleType.CENTER_CROP
+            }, LinearLayout.LayoutParams(dp(72), dp(72)))
+            linha.addView(botaoVoltar("Remover foto ${indice + 1}") {
+                fotosRascunho.removeAt(indice)
+                atualizarFotosRascunho()
+            }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            lista.addView(linha)
+        }
+    }
+
+    private fun decodificarMiniatura(bytes: ByteArray): Bitmap? {
+        val limites = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, limites)
+        val opcoes = BitmapFactory.Options()
+        while (limites.outWidth / opcoes.inSampleSize > 256 || limites.outHeight / opcoes.inSampleSize > 256) {
+            opcoes.inSampleSize *= 2
+        }
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opcoes)
+    }
+
+    private fun mostrarFoto(bytes: ByteArray) {
+        val imagem = ImageView(this).apply {
+            setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
+            adjustViewBounds = true
+        }
+        AlertDialog.Builder(this).setView(imagem).setPositiveButton("Fechar", null).show()
     }
 
     private fun dataPagamentoLocal(venda: VendaRelatorio): String {

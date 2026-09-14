@@ -32,6 +32,13 @@ SQLite é a base operacional principal. A planilha permanece disponível como ba
 - sincronização do novo card para a planilha;
 - funcionamento normal aparente após o sync.
 
+## Fotos dos produtos
+
+As fotos ficam exclusivamente no SQLite local, vinculadas por `id_venda_pai`.
+O Apps Script e a planilha não recebem imagens. Exportar, importar ou mesclar
+dados da planilha não transfere fotos para outro aparelho. O backup do arquivo
+SQLite inclui as imagens.
+
 ## Cuidados
 
 Qualquer alteração nessa área deve ser testada com:

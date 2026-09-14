@@ -23,6 +23,16 @@ A versão estável possui, entre outras, as seguintes capacidades que devem ser 
 - pesquisa;
 - cobrança via WhatsApp.
 
+## Fotos dos produtos
+- fotos opcionais para novas vendas;
+- seleção de uma ou várias fotos da galeria;
+- captura pela câmera;
+- visualização nos detalhes de todas as parcelas da mesma venda;
+- armazenamento offline no SQLite e inclusão no backup local.
+
+Vendas antigas ou importadas podem não ter foto. As fotos não fazem parte da
+sincronização com a planilha.
+
 ## Pagamentos
 - pagamento parcial;
 - data de pagamento;

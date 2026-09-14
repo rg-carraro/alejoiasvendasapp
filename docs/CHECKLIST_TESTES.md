@@ -5,6 +5,13 @@ Após mudanças, testar pelo menos:
 - [ ] app abre sem crash;
 - [ ] base SQLite existente abre sem perda;
 - [ ] clientes aparecem;
+- [ ] nova venda sem foto salva normalmente;
+- [ ] nova venda com uma foto da galeria;
+- [ ] nova venda com várias fotos da galeria;
+- [ ] nova venda com foto tirada pela câmera;
+- [ ] fotos aparecem em todas as parcelas e após reiniciar o app;
+- [ ] backup SQLite contém as fotos;
+- [ ] base SQLite v1 migra para v2 sem perder vendas ou pagamentos;
 - [ ] nova venda simples;
 - [ ] nova venda parcelada;
 - [ ] edição de venda;
