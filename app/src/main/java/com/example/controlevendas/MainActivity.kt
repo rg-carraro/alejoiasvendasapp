@@ -85,7 +85,6 @@ class MainActivity : AppCompatActivity() {
     private var filtrarAReceber = false
     private var filtroCliente: String = ""
     private var filtroClienteResumo: String = ""
-    private var pesquisaGlobal: String = ""
 
     private var relatorioInicio: String? = null
     private var relatorioFim: String? = null
@@ -104,12 +103,12 @@ class MainActivity : AppCompatActivity() {
             carregarRelatorio {
                 when (telaAtual) {
                     "vendas" -> abrirListaVendas()
-                    "resumo" -> abrirResumo()
                     "dashboard" -> abrirDashboardFinanceiro()
                     "dashboard_vendido" -> abrirDetalhamentoDashboard(false)
                     "dashboard_recebido" -> abrirDetalhamentoDashboard(true)
                     "resumo_clientes" -> abrirResumoClientes()
                     "resumo_periodo" -> abrirResumoPeriodo()
+                    "resumo_mes" -> abrirResumoMes()
                     else -> abrirMenuPrincipal()
                 }
             }
@@ -137,7 +136,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when (telaAtual) {
-            "dashboard_vendido", "dashboard_recebido" -> abrirDashboardFinanceiro()
+            "dashboard_vendido", "dashboard_recebido",
+            "resumo_periodo", "resumo_mes" -> abrirDashboardFinanceiro()
             "menu" -> super.onBackPressed()
             else -> abrirMenuPrincipal()
         }
@@ -261,18 +261,13 @@ class MainActivity : AppCompatActivity() {
         content.addView(linha1)
 
         val linha2 = linhaBotoes()
-        linha2.addView(botaoQuadrado("Resumo", "Relatórios", 1f) { abrirResumo() })
+        linha2.addView(botaoQuadrado("Financeiro", "Relatórios", 1f) { abrirDashboardFinanceiro() })
         linha2.addView(botaoQuadrado("Clientes", "Histórico", 1f) { abrirResumoClientes() })
         content.addView(linha2)
 
         val linha3 = linhaBotoes()
-        linha3.addView(botaoQuadrado("Busca", "Global", 1f) { abrirBuscaGlobal() })
         linha3.addView(botaoQuadrado("Dados", "Sync", 1f) { abrirBackupLocal() })
         content.addView(linha3)
-
-        val linhaExtra2 = linhaBotoes()
-        linhaExtra2.addView(botaoQuadrado("Dashboard", "Financeiro", 1f) { abrirDashboardFinanceiro() })
-        content.addView(linhaExtra2)
     }
 
     private fun adicionarDashboardCompacto() {
@@ -298,8 +293,14 @@ class MainActivity : AppCompatActivity() {
             val okInicio = filtroInicio?.let { data >= it } ?: true
             val okFim = filtroFim?.let { data <= it } ?: true
             val okReceber = if (filtrarAReceber) venda.saldo > 0.0 else true
-            val okCliente = if (filtroCliente.isBlank()) true else (venda.nome_cliente ?: "").contains(filtroCliente, ignoreCase = true)
-            okInicio && okFim && okReceber && okCliente
+            val termo = filtroCliente.trim()
+            val okPesquisa = termo.isBlank() ||
+                    (venda.nome_cliente ?: "").contains(termo, ignoreCase = true) ||
+                    (venda.descricao ?: "").contains(termo, ignoreCase = true) ||
+                    (venda.data_venda ?: "").contains(termo, ignoreCase = true) ||
+                    (venda.data_vencimento ?: "").contains(termo, ignoreCase = true) ||
+                    moeda.format(venda.valor_total).contains(termo, ignoreCase = true)
+            okInicio && okFim && okReceber && okPesquisa
         }
     }
 
@@ -311,7 +312,7 @@ class MainActivity : AppCompatActivity() {
 
         content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
 
-        val pesquisaCliente = campo("Pesquisar Cliente").apply {
+        val pesquisaCliente = campo("Pesquisar Cliente, Descrição, Data Ou Valor").apply {
             setText(filtroCliente)
             setSingleLine(true)
             setOnEditorActionListener { _, _, _ ->
@@ -320,7 +321,7 @@ class MainActivity : AppCompatActivity() {
                 true
             }
         }
-        content.addView(campoRotulado("Cliente:", pesquisaCliente), margemCard())
+        content.addView(campoRotulado("Pesquisa:", pesquisaCliente), margemCard())
 
         content.addView(botaoVoltar("Aplicar Pesquisa") {
             filtroCliente = pesquisaCliente.text.toString()
@@ -335,7 +336,7 @@ class MainActivity : AppCompatActivity() {
         })
         content.addView(filtros)
 
-        if (filtroInicio != null || filtroFim != null || filtrarAReceber) {
+        if (filtroInicio != null || filtroFim != null || filtrarAReceber || filtroCliente.isNotBlank()) {
             content.addView(botaoVoltar("Limpar Filtros") {
                 filtroInicio = null
                 filtroFim = null
@@ -343,7 +344,12 @@ class MainActivity : AppCompatActivity() {
                 filtroCliente = ""
                 abrirListaVendas()
             })
-            content.addView(texto("Filtro: ${filtroInicio ?: "..."} até ${filtroFim ?: "..."}", 13f, false))
+            if (filtroInicio != null || filtroFim != null) {
+                content.addView(texto("Filtro: ${filtroInicio ?: "..."} até ${filtroFim ?: "..."}", 13f, false))
+            }
+            if (filtroCliente.isNotBlank()) {
+                content.addView(texto("Pesquisa: $filtroCliente", 13f, false))
+            }
         }
 
         if (lista.isEmpty()) {
@@ -614,7 +620,7 @@ private fun abrirDashboardFinanceiro() {
         content.removeAllViews()
         val mesSelecionado = mesDashboardSelecionado ?: mesAtual
         val vendasDashboard = vendasCache.filter { (it.data_venda ?: "").startsWith(mesSelecionado) }
-        statusText.text = "Dashboard Financeiro | $mesSelecionado"
+        statusText.text = "Financeiro e Relatórios | $mesSelecionado"
 
         content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
         content.addView(botaoVoltar("Selecionar Outro Mês") { abrirSelecionarMesDashboard() })
@@ -649,15 +655,26 @@ private fun abrirDashboardFinanceiro() {
         linha3.addView(cardDashboard("Cards Do Mês", vendasDashboard.size.toString(), 1f))
         content.addView(linha3)
 
-        adicionarCardResumo("Vendido No Mês", moeda.format(totalVendido)) {
-            abrirDetalhamentoDashboard(false)
-        }
-        adicionarCardResumo("Recebido No Mês", moeda.format(totalRecebido)) {
-            abrirDetalhamentoDashboard(true)
-        }
-        adicionarCardResumo("Faltante No Mês", moeda.format(totalReceber))
-
         adicionarGraficoDashboard(totalVendido, totalRecebido, totalReceber)
+
+        content.addView(texto("Relatórios e resumo geral", 18f, true).apply {
+            setPadding(0, dp(18), 0, dp(6))
+        })
+        val relatorios = linhaBotoes()
+        relatorios.addView(botaoQuadrado("Relatório", "Período", 1f) { abrirFiltroResumoPeriodo() })
+        relatorios.addView(botaoQuadrado("Resumo", "Mensal", 1f) { abrirResumoMes() })
+        content.addView(relatorios)
+        content.addView(botaoVoltar("Resumo Por Cliente") { abrirResumoClientes() })
+
+        adicionarCardResumo("Quantidade De Cards (Geral)", vendasCache.size.toString())
+        adicionarCardResumo("Cards Em Aberto (Geral)", vendasCache.count { it.saldo > 0.0 }.toString())
+        adicionarCardResumo("Cards Vencidos (Geral)", vendasCache.count { estaVencida(it) }.toString())
+        adicionarCardResumo("Cards Quitados (Geral)", vendasCache.count { it.total_pago >= it.valor_total && it.valor_total > 0.0 }.toString())
+        adicionarCardResumo("Total Vendido (Geral)", moeda.format(vendasCache.sumOf { it.valor_total }))
+        adicionarCardResumo("Total Recebido (Geral)", moeda.format(vendasCache.sumOf { it.total_pago }))
+        adicionarCardResumo("Saldo Faltante Total", moeda.format(vendasCache.sumOf { it.saldo }))
+        content.addView(botaoVoltar("Exportar Excel/CSV") { exportarCsvResumo(vendasCache, "resumo_alejoias.csv") })
+        content.addView(botaoVoltar("Gerar PDF Do Resumo") { gerarPdfResumo(vendasCache, "resumo_alejoias.pdf") })
     }
 
     private fun abrirDetalhamentoDashboard(recebido: Boolean) {
@@ -671,7 +688,7 @@ private fun abrirDashboardFinanceiro() {
         val titulo = if (recebido) "Recebido nas vendas do mês" else "Vendido no mês"
         val total = if (recebido) lista.sumOf { it.total_pago } else lista.sumOf { it.valor_total }
         statusText.text = "$titulo | $mes"
-        content.addView(botaoVoltar("Voltar Ao Dashboard") { abrirDashboardFinanceiro() })
+        content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
         adicionarCardResumo(titulo, moeda.format(total))
         content.addView(texto("$mes • ${lista.size} cards", 14f, false), margemCard())
         if (lista.isEmpty()) {
@@ -695,7 +712,7 @@ private fun abrirDashboardFinanceiro() {
         }
 
         AlertDialog.Builder(this)
-            .setTitle("Mês Do Dashboard")
+            .setTitle("Mês Do Financeiro")
             .setItems(mesesDisponiveis.toTypedArray()) { _, which ->
                 mesDashboardSelecionado = mesesDisponiveis[which]
                 abrirDashboardFinanceiro()
@@ -736,31 +753,6 @@ private fun abrirDashboardFinanceiro() {
 
 
 
-    private fun abrirResumo() {
-        telaAtual = "resumo"
-        content.removeAllViews()
-        statusText.text = "Resumo Financeiro"
-
-        content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
-
-        val linha = linhaBotoes()
-        linha.addView(botaoQuadrado("Resumo", "Período", 1f) { abrirFiltroResumoPeriodo() })
-        linha.addView(botaoQuadrado("Resumo", "Clientes", 1f) { abrirResumoClientes() })
-        content.addView(linha)
-
-        adicionarCardResumo("Quantidade De Cards", vendasCache.size.toString())
-        adicionarCardResumo("Cards Em Aberto", vendasCache.count { it.saldo > 0.0 }.toString())
-        adicionarCardResumo("Cards Vencidos", vendasCache.count { estaVencida(it) }.toString())
-        adicionarCardResumo("Cards Quitados", vendasCache.count { it.total_pago >= it.valor_total && it.valor_total > 0.0 }.toString())
-        adicionarCardResumo("Total Vendido", moeda.format(vendasCache.sumOf { it.valor_total }))
-        adicionarCardResumo("Total Recebido", moeda.format(vendasCache.sumOf { it.total_pago }))
-        adicionarCardResumo("Saldo Faltante Total", moeda.format(vendasCache.sumOf { it.saldo }))
-
-        content.addView(botaoVoltar("Ver Resumo Por Mês") { abrirResumoMes() })
-        content.addView(botaoVoltar("Exportar Excel/CSV") { exportarCsvResumo(vendasCache, "resumo_alejoias.csv") })
-        content.addView(botaoVoltar("Gerar PDF Do Resumo") { gerarPdfResumo(vendasCache, "resumo_alejoias.pdf") })
-    }
-
     private fun abrirFiltroResumoPeriodo() {
         abrirDialogPeriodo("Relatório Por Período", relatorioInicio, relatorioFim) { inicio, fim ->
             relatorioInicio = inicio
@@ -774,7 +766,7 @@ private fun abrirDashboardFinanceiro() {
         content.removeAllViews()
         statusText.text = "Resumo Por Período"
 
-        content.addView(botaoVoltar("Voltar Ao Resumo") { abrirResumo() })
+        content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
         content.addView(botaoVoltar("Alterar Período") { abrirFiltroResumoPeriodo() })
 
         val lista = vendasCache.filter { venda ->
@@ -802,7 +794,7 @@ private fun abrirResumoMes() {
         content.removeAllViews()
         statusText.text = "Resumo Por Mês"
 
-        content.addView(botaoVoltar("Voltar Ao Resumo") { abrirResumo() })
+        content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
 
         val mesSelecionado = mesResumoSelecionado ?: mesAtual
         val vendasMes = vendasCache.filter { (it.data_venda ?: "").startsWith(mesSelecionado) }
@@ -855,7 +847,7 @@ private fun abrirResumoMes() {
         content.removeAllViews()
         statusText.text = "Resumo Por Cliente"
 
-        content.addView(botaoVoltar("Voltar Ao Resumo") { abrirResumo() })
+        content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
 
         val pesquisaCliente = campo("Pesquisar Cliente").apply {
             setText(filtroClienteResumo)
@@ -1071,53 +1063,6 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         content.addView(barra("Vendido", totalVendido), margemCard())
         content.addView(barra("Recebido", totalRecebido), margemCard())
         content.addView(barra("A Receber", totalReceber), margemCard())
-    }
-
-    private fun abrirBuscaGlobal() {
-        telaAtual = "busca_global"
-        content.removeAllViews()
-        statusText.text = "Busca Global"
-
-        content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
-
-        val campoBusca = campo("Pesquisar Cliente, Descrição, Data Ou Valor").apply {
-            setText(pesquisaGlobal)
-            setSingleLine(true)
-            setOnEditorActionListener { _, _, _ ->
-                pesquisaGlobal = text.toString()
-                abrirBuscaGlobal()
-                true
-            }
-        }
-
-        content.addView(campoRotulado("Pesquisa:", campoBusca), margemCard())
-        content.addView(botaoVoltar("Pesquisar") {
-            pesquisaGlobal = campoBusca.text.toString()
-            abrirBuscaGlobal()
-        })
-
-        if (pesquisaGlobal.isBlank()) {
-            content.addView(texto("Digite algo para pesquisar.", 16f, false))
-            return
-        }
-
-        val termo = pesquisaGlobal.trim()
-        val resultados = vendasCache.filter { venda ->
-            (venda.nome_cliente ?: "").contains(termo, ignoreCase = true) ||
-                    (venda.descricao ?: "").contains(termo, ignoreCase = true) ||
-                    (venda.data_venda ?: "").contains(termo, ignoreCase = true) ||
-                    (venda.data_vencimento ?: "").contains(termo, ignoreCase = true) ||
-                    moeda.format(venda.valor_total).contains(termo, ignoreCase = true)
-        }.sortedByDescending { it.data_vencimento ?: "" }
-
-        content.addView(texto("Resultado: ${resultados.size} cards", 15f, true))
-
-        if (resultados.isEmpty()) {
-            content.addView(texto("Nenhum resultado encontrado.", 16f, false))
-            return
-        }
-
-        resultados.forEach { adicionarCardVenda(it) }
     }
 
     private fun abrirBackupLocal() {

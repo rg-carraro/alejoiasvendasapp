@@ -10,7 +10,7 @@ Após mudanças, testar pelo menos:
 - [ ] nova venda com várias fotos da galeria;
 - [ ] nova venda com foto tirada pela câmera;
 - [ ] salvar venda com foto não apresenta divisão por zero;
-- [ ] miniatura aparece no card, busca global e histórico do cliente;
+- [ ] miniatura aparece no card, pesquisa da lista e histórico do cliente;
 - [ ] todas as fotos aparecem nos detalhes de cada parcela após reiniciar;
 - [ ] PDF individual do card contém todas as fotos;
 - [ ] PDFs de resumo, mês e cliente incluem fotos dos respectivos cards;
@@ -26,7 +26,10 @@ Após mudanças, testar pelo menos:
 - [ ] correção de valor pago;
 - [ ] cobrança WhatsApp;
 - [ ] filtros;
-- [ ] pesquisa;
+- [ ] pesquisa por cliente, descrição, datas e valor na lista de vendas;
+- [ ] busca combinada com filtros de data e a receber;
+- [ ] menu Financeiro / Relatórios dá acesso ao dashboard e resumo geral;
+- [ ] relatório por período e envio de imagem por WhatsApp;
 - [ ] resumo financeiro;
 - [ ] resumo mensal;
 - [ ] resumo por cliente;

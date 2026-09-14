@@ -81,7 +81,7 @@ Durante alterações no sync, priorizar prevenção de perda ou duplicação de 
 - resumo mensal;
 - resumo por cliente;
 - dashboard financeiro;
-- busca global;
+- busca por cliente, descrição, datas e valor integrada à lista de vendas;
 - notificações;
 - geração de PDF;
 - exportação CSV;
