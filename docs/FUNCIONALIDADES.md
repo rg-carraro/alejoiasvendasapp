@@ -53,7 +53,7 @@ sincronização com a planilha.
 
 O acesso **Financeiro / Relatórios** reúne o painel mensal e botões iguais
 para relatório por período, mensal, por cliente e PDF financeiro. CSV continua
-disponível nos relatórios específicos e em Dados.
+disponível no relatório mensal e em Dados; o relatório por cliente mantém PDF e histórico.
 Dados e sincronização ficam no botão de opções `⋮` do menu principal.
 
 ## Saídas

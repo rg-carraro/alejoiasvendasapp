@@ -29,7 +29,7 @@ também encontra cliente, descrição, datas e valor; a tela separada de busca
 global foi removida. **Dados e sincronização** fica no botão de opções
 `⋮` do menu principal. Os indicadores do painel e dos relatórios mensal e por período abrem
 a lista de cards correspondente. A exportação Excel/CSV geral saiu dessa tela;
-as exportações específicas continuam nos relatórios e em Dados.
+o CSV permanece no relatório mensal e em Dados.
 
 ## Arquitetura atual
 

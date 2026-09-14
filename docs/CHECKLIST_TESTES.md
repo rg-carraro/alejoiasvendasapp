@@ -34,7 +34,7 @@ Após mudanças, testar pelo menos:
 - [ ] relatório por período e envio de imagem por WhatsApp;
 - [ ] resumo financeiro;
 - [ ] resumo mensal;
-- [ ] resumo por cliente;
+- [ ] relatório por cliente mantém histórico e extrato PDF, sem botão CSV;
 - [ ] dashboard, inclusive seleção de outro mês;
 - [ ] tocar em Vendido no mês lista os cards e soma o valor vendido exibido;
 - [ ] tocar em Recebido no mês lista os cards pagos e soma o valor recebido exibido;

@@ -1040,9 +1040,6 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
         content.addView(botaoVoltar("Gerar Extrato PDF") {
             gerarPdfCliente(cliente, vendas)
         })
-        content.addView(botaoVoltar("Exportar Extrato CSV") {
-            exportarCsvResumo(vendas, "extrato_${cliente.replace(" ", "_")}.csv")
-        })
 
         vendas.sortedWith(compareBy<VendaRelatorio> { it.data_venda ?: "" }.thenBy { it.data_vencimento ?: "" })
             .forEach { venda ->
