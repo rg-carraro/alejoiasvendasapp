@@ -16,7 +16,8 @@ da conciliação entre as duas pastas.
 Uma nova venda pode incluir fotos do produto, mas elas são opcionais. É possível escolher várias
 imagens da galeria ou tirar fotos com a câmera. A primeira foto aparece no
 card da venda, na busca global e no histórico do cliente; todas aparecem nos
-detalhes de cada parcela e no PDF individual do card e ficam no SQLite local, inclusive no backup do banco. A
+detalhes de cada parcela, no PDF individual do card e nos relatórios PDF.
+As fotos ficam no SQLite local, inclusive no backup do banco. A
 sincronização com Google Planilhas continua enviando apenas os dados de vendas,
 clientes e pagamentos; fotos não são transferidas entre aparelhos.
 

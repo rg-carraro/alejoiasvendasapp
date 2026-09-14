@@ -13,6 +13,7 @@ Após mudanças, testar pelo menos:
 - [ ] miniatura aparece no card, busca global e histórico do cliente;
 - [ ] todas as fotos aparecem nos detalhes de cada parcela após reiniciar;
 - [ ] PDF individual do card contém todas as fotos;
+- [ ] PDFs de resumo, mês e cliente incluem fotos dos respectivos cards;
 - [ ] backup SQLite contém as fotos;
 - [ ] base SQLite v1 migra para v2 sem perder vendas ou pagamentos;
 - [ ] nova venda simples;
@@ -30,6 +31,8 @@ Após mudanças, testar pelo menos:
 - [ ] resumo mensal;
 - [ ] resumo por cliente;
 - [ ] dashboard, inclusive seleção de outro mês;
+- [ ] tocar em Vendido no mês lista os cards e soma o valor vendido exibido;
+- [ ] tocar em Recebido no mês lista os cards pagos e soma o valor recebido exibido;
 - [ ] PDF;
 - [ ] CSV;
 - [ ] backup;

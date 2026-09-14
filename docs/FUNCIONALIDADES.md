@@ -29,7 +29,7 @@ A versão estável possui, entre outras, as seguintes capacidades que devem ser 
 - captura pela câmera;
 - miniatura no card da lista de vendas, busca global e histórico do cliente;
 - visualização de todas as fotos nos detalhes de cada parcela da mesma venda;
-- exportação de PDF individual do card com todas as fotos;
+- exportação de PDF individual do card e relatórios com todas as fotos dos registros;
 - armazenamento offline no SQLite e inclusão no backup local.
 
 Vendas antigas ou importadas podem não ter foto. As fotos não fazem parte da
@@ -46,7 +46,7 @@ sincronização com a planilha.
 - resumo por período;
 - resumo mensal;
 - resumo por cliente;
-- dashboard;
+- dashboard com detalhamento dos cards vendidos e pagos do mês selecionado;
 - histórico de cliente;
 - busca global.
 

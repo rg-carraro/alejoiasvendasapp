@@ -106,6 +106,8 @@ class MainActivity : AppCompatActivity() {
                     "vendas" -> abrirListaVendas()
                     "resumo" -> abrirResumo()
                     "dashboard" -> abrirDashboardFinanceiro()
+                    "dashboard_vendido" -> abrirDetalhamentoDashboard(false)
+                    "dashboard_recebido" -> abrirDetalhamentoDashboard(true)
                     "resumo_clientes" -> abrirResumoClientes()
                     "resumo_periodo" -> abrirResumoPeriodo()
                     else -> abrirMenuPrincipal()
@@ -134,7 +136,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (telaAtual != "menu") abrirMenuPrincipal() else super.onBackPressed()
+        when (telaAtual) {
+            "dashboard_vendido", "dashboard_recebido" -> abrirDashboardFinanceiro()
+            "menu" -> super.onBackPressed()
+            else -> abrirMenuPrincipal()
+        }
     }
 
     private fun montarTela() {
@@ -625,8 +631,12 @@ private fun abrirDashboardFinanceiro() {
         val vendasVencidas = vendasDashboard.count { estaVencida(it) }
 
         val linha1 = linhaBotoes()
-        linha1.addView(cardDashboard("Total Vendido", moeda.format(totalVendido), 1f))
-        linha1.addView(cardDashboard("Total Recebido", moeda.format(totalRecebido), 1f))
+        linha1.addView(cardDashboard("Total Vendido", moeda.format(totalVendido), 1f) {
+            abrirDetalhamentoDashboard(false)
+        })
+        linha1.addView(cardDashboard("Total Recebido", moeda.format(totalRecebido), 1f) {
+            abrirDetalhamentoDashboard(true)
+        })
         content.addView(linha1)
 
         val linha2 = linhaBotoes()
@@ -639,11 +649,36 @@ private fun abrirDashboardFinanceiro() {
         linha3.addView(cardDashboard("Cards Do Mês", vendasDashboard.size.toString(), 1f))
         content.addView(linha3)
 
-        adicionarCardResumo("Vendido No Mês", moeda.format(totalVendido))
-        adicionarCardResumo("Recebido No Mês", moeda.format(totalRecebido))
+        adicionarCardResumo("Vendido No Mês", moeda.format(totalVendido)) {
+            abrirDetalhamentoDashboard(false)
+        }
+        adicionarCardResumo("Recebido No Mês", moeda.format(totalRecebido)) {
+            abrirDetalhamentoDashboard(true)
+        }
         adicionarCardResumo("Faltante No Mês", moeda.format(totalReceber))
 
         adicionarGraficoDashboard(totalVendido, totalRecebido, totalReceber)
+    }
+
+    private fun abrirDetalhamentoDashboard(recebido: Boolean) {
+        telaAtual = if (recebido) "dashboard_recebido" else "dashboard_vendido"
+        content.removeAllViews()
+        val mes = mesDashboardSelecionado ?: mesAtual
+        val vendasMes = vendasCache
+            .filter { (it.data_venda ?: "").startsWith(mes) }
+            .sortedByDescending { it.data_vencimento ?: "" }
+        val lista = if (recebido) vendasMes.filter { it.total_pago > 0.0 } else vendasMes
+        val titulo = if (recebido) "Recebido nas vendas do mês" else "Vendido no mês"
+        val total = if (recebido) lista.sumOf { it.total_pago } else lista.sumOf { it.valor_total }
+        statusText.text = "$titulo | $mes"
+        content.addView(botaoVoltar("Voltar Ao Dashboard") { abrirDashboardFinanceiro() })
+        adicionarCardResumo(titulo, moeda.format(total))
+        content.addView(texto("$mes • ${lista.size} cards", 14f, false), margemCard())
+        if (lista.isEmpty()) {
+            content.addView(texto("Nenhum card encontrado nesse mês.", 16f, false))
+        } else {
+            lista.forEach { adicionarCardVenda(it) }
+        }
     }
 
     private fun abrirSelecionarMesDashboard() {
@@ -669,7 +704,9 @@ private fun abrirDashboardFinanceiro() {
             .show()
     }
 
-    private fun cardDashboard(titulo: String, valor: String, peso: Float): LinearLayout {
+    private fun cardDashboard(
+        titulo: String, valor: String, peso: Float, acao: (() -> Unit)? = null
+    ): LinearLayout {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -689,6 +726,11 @@ private fun abrirDashboardFinanceiro() {
         val params = LinearLayout.LayoutParams(0, dp(86), peso)
         params.setMargins(dp(5), dp(5), dp(5), dp(5))
         card.layoutParams = params
+        if (acao != null) {
+            card.isClickable = true
+            card.isFocusable = true
+            card.setOnClickListener { acao() }
+        }
         return card
     }
 
@@ -1350,7 +1392,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     }
 
     private fun gerarPdfGenerico(
-        file: File, titulo: String, lista: List<VendaRelatorio>, incluirFotos: Boolean = false
+        file: File, titulo: String, lista: List<VendaRelatorio>, incluirFotos: Boolean = true
     ) {
         val pdf = PdfDocument()
 
@@ -1462,7 +1504,11 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         val vencidas = lista.count { estaVencida(it) }
         val abertas = lista.count { it.saldo > 0.0 }
         val valorMedio = if (lista.isNotEmpty()) totalVendido / lista.size else 0.0
-        val tipoRelatorio = if (incluirFotos) "CARD DE VENDA" else if (mesReferencia() != "Múltiplos meses") "RELATÓRIO MENSAL" else "RELATÓRIO FINANCEIRO"
+        val tipoRelatorio = when {
+            titulo == "Card de venda" -> "CARD DE VENDA"
+            mesReferencia() != "Múltiplos meses" -> "RELATÓRIO MENSAL"
+            else -> "RELATÓRIO FINANCEIRO"
+        }
 
         canvas.drawText("◇ ALEJOIAS", 297f, y.toFloat(), titlePaint)
         y += 24
@@ -2091,7 +2137,9 @@ private fun criarCanalNotificacoes() {
         setOnClickListener { acao() }
     }
 
-    private fun adicionarCardResumo(titulo: String, valor: String) {
+    private fun adicionarCardResumo(
+        titulo: String, valor: String, acao: (() -> Unit)? = null
+    ) {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(12), dp(16), dp(12))
@@ -2099,6 +2147,11 @@ private fun criarCanalNotificacoes() {
         }
         card.addView(texto(titulo, 13f, false).apply { setTextColor(corTextoSecundario) })
         card.addView(texto(valor, if (resources.displayMetrics.widthPixels < 900) 18f else 21f, true))
+        if (acao != null) {
+            card.isClickable = true
+            card.isFocusable = true
+            card.setOnClickListener { acao() }
+        }
         content.addView(card, margemCardResumo())
     }
 
