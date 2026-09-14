@@ -23,12 +23,13 @@ clientes e pagamentos; fotos não são transferidas entre aparelhos.
 
 ## Navegação
 
-O menu principal reúne dashboard, resumo geral, relatórios por período/mês/cliente
-e exportações em **Financeiro / Relatórios**. A pesquisa da lista de vendas
+O menu **Financeiro / Relatórios** reúne o painel mensal e botões uniformes
+para relatórios por período, mês e cliente e para gerar o PDF financeiro. A pesquisa da lista de vendas
 também encontra cliente, descrição, datas e valor; a tela separada de busca
 global foi removida. **Dados e sincronização** fica no botão de opções
-`⋮` do menu principal. Os indicadores financeiros do dashboard e dos
-resumos geral, mensal e por período abrem a lista de cards correspondente.
+`⋮` do menu principal. Os indicadores do painel e dos relatórios mensal e por período abrem
+a lista de cards correspondente. A exportação Excel/CSV geral saiu dessa tela;
+as exportações específicas continuam nos relatórios e em Dados.
 
 ## Arquitetura atual
 

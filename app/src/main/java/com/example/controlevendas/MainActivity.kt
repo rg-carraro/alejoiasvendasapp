@@ -686,38 +686,15 @@ private fun abrirDashboardFinanceiro() {
 
         adicionarGraficoDashboard(totalVendido, totalRecebido, totalReceber)
 
-        content.addView(texto("Relatórios e resumo geral", 18f, true).apply {
+        content.addView(texto("Relatórios", 18f, true).apply {
             setPadding(0, dp(18), 0, dp(6))
         })
-        val relatorios = linhaBotoes()
-        relatorios.addView(botaoQuadrado("Relatório", "Período", 1f) { abrirFiltroResumoPeriodo() })
-        relatorios.addView(botaoQuadrado("Resumo", "Mensal", 1f) { abrirResumoMes() })
-        content.addView(relatorios)
-        content.addView(botaoVoltar("Resumo Por Cliente") { abrirResumoClientes() })
-
-        adicionarCardResumo("Quantidade De Cards (Geral)", vendasCache.size.toString()) {
-            abrirDetalhamentoFinanceiro("geral", "todos")
-        }
-        adicionarCardResumo("Cards Em Aberto (Geral)", vendasCache.count { it.saldo > 0.0 }.toString()) {
-            abrirDetalhamentoFinanceiro("geral", "abertos")
-        }
-        adicionarCardResumo("Cards Vencidos (Geral)", vendasCache.count { estaVencida(it) }.toString()) {
-            abrirDetalhamentoFinanceiro("geral", "vencidos")
-        }
-        adicionarCardResumo("Cards Quitados (Geral)", vendasCache.count { it.total_pago >= it.valor_total && it.valor_total > 0.0 }.toString()) {
-            abrirDetalhamentoFinanceiro("geral", "quitados")
-        }
-        adicionarCardResumo("Total Vendido (Geral)", moeda.format(vendasCache.sumOf { it.valor_total })) {
-            abrirDetalhamentoFinanceiro("geral", "vendido")
-        }
-        adicionarCardResumo("Total Recebido (Geral)", moeda.format(vendasCache.sumOf { it.total_pago })) {
-            abrirDetalhamentoFinanceiro("geral", "recebido")
-        }
-        adicionarCardResumo("Saldo Faltante Total", moeda.format(vendasCache.sumOf { it.saldo })) {
-            abrirDetalhamentoFinanceiro("geral", "faltante")
-        }
-        content.addView(botaoVoltar("Exportar Excel/CSV") { exportarCsvResumo(vendasCache, "resumo_alejoias.csv") })
-        content.addView(botaoVoltar("Gerar PDF Do Resumo") { gerarPdfResumo(vendasCache, "resumo_alejoias.pdf") })
+        content.addView(botaoVoltar("Relatório por período") { abrirFiltroResumoPeriodo() }, margemCard())
+        content.addView(botaoVoltar("Relatório mensal") { abrirResumoMes() }, margemCard())
+        content.addView(botaoVoltar("Relatório por cliente") { abrirResumoClientes() }, margemCard())
+        content.addView(botaoVoltar("Gerar PDF financeiro") {
+            gerarPdfResumo(vendasCache, "resumo_alejoias.pdf")
+        }, margemCard())
     }
 
     private fun abrirDetalhamentoFinanceiro(origem: String, metrica: String) {
@@ -897,7 +874,7 @@ private fun abrirDashboardFinanceiro() {
 private fun abrirResumoMes() {
         telaAtual = "resumo_mes"
         content.removeAllViews()
-        statusText.text = "Resumo Por Mês"
+        statusText.text = "Relatório Mensal"
 
         content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
 
@@ -964,7 +941,7 @@ private fun abrirResumoMes() {
     private fun abrirResumoClientes() {
         telaAtual = "resumo_clientes"
         content.removeAllViews()
-        statusText.text = "Resumo Por Cliente"
+        statusText.text = "Relatório Por Cliente"
 
         content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
 

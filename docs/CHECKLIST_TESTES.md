@@ -28,7 +28,8 @@ Após mudanças, testar pelo menos:
 - [ ] filtros;
 - [ ] pesquisa por cliente, descrição, datas e valor na lista de vendas;
 - [ ] busca combinada com filtros de data e a receber;
-- [ ] menu Financeiro / Relatórios dá acesso ao dashboard e resumo geral;
+- [ ] menu Financeiro / Relatórios mostra painel mensal e botões uniformes
+      para período, mensal, cliente e PDF financeiro;
 - [ ] botão `⋮` abre Dados e sincronização;
 - [ ] relatório por período e envio de imagem por WhatsApp;
 - [ ] resumo financeiro;
@@ -37,8 +38,8 @@ Após mudanças, testar pelo menos:
 - [ ] dashboard, inclusive seleção de outro mês;
 - [ ] tocar em Vendido no mês lista os cards e soma o valor vendido exibido;
 - [ ] tocar em Recebido no mês lista os cards pagos e soma o valor recebido exibido;
-- [ ] valores e contagens dos resumos geral, mensal e por período abrem listas
-      com totais correspondentes e voltam ao relatório de origem;
+- [ ] valores e contagens do painel, relatório mensal e por período abrem
+      listas com totais correspondentes e voltam ao relatório de origem;
 - [ ] PDF;
 - [ ] CSV;
 - [ ] backup;
