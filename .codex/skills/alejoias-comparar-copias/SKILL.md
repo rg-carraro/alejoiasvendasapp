@@ -23,3 +23,5 @@ sincronização com Google Planilhas.
 Atualize a documentação quando houver fato novo. Porte código entre cópias
 somente quando o pedido incluir essa mudança; mantenha a alteração pontual e
 valide as funções afetadas conforme `docs/CHECKLIST_TESTES.md`.
+
+Quando o usuário pedir sincronização, confira o commit e o estado de ambas as cópias antes de avançar a cópia do Android Studio. Consulte `docs/VERSIONAMENTO_GIT.md` para o fluxo com o GitHub; não trate o histórico de `docs/COMPARACAO_COPIAS.md` como estado atual.

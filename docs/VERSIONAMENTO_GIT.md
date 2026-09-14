@@ -1,43 +1,27 @@
 # Versionamento Git
 
-## Base estável
+A tag `sqlite-sync-v2-stable` identifica a base SQLite Sync v2 validada. Mudanças devem ser pontuais e reversíveis.
 
-A tag `sqlite-sync-v2-stable` identifica o código-base validado da versão 2.0
-SQLite Sync. Mudanças futuras devem partir dessa base e ser pequenas e
-reversíveis.
+## Fluxo atual
 
-## Fluxo recomendado
-
-1. Confirmar que a árvore está limpa com `git status`.
-2. Criar uma branch curta para cada ajuste: `fix/...`, `feature/...` ou
-   `docs/...`.
-3. Fazer mudanças pontuais e revisar `git diff`.
-4. Executar `gradlew.bat assembleDebug` e o checklist aplicável.
-5. Criar commits descritivos sem incluir APKs, caches, configurações locais ou
-   credenciais.
-6. Integrar a mudança somente depois da validação no aparelho quando ela afetar
-   dados, interface, pagamentos ou sincronização.
+1. Confira `git status` e o código afetado; isole o trabalho em branch quando necessário.
+2. Revise `git diff`, valide com `gradlew.bat assembleDebug` e execute o checklist aplicável em `docs/CHECKLIST_TESTES.md`.
+3. Faça commits descritivos sem APKs, caches, configurações locais ou credenciais.
+4. Antes de sincronizar a cópia do Android Studio em `C:\Users\rgcar\git\alejoiasvendasapp`, confira sua árvore de trabalho. Prefira avanço rápido sem descartar alterações locais.
+5. Quando o usuário pedir sync com GitHub, confira o remoto e publique os commits. Informe quais testes ainda dependem do aparelho.
 
 ## Remoto
 
-O repositório remoto deve ser privado, especialmente porque o aplicativo contém
-o endereço da implantação do Apps Script. Configure o remoto apenas no serviço
-e na conta escolhidos pelo responsável do projeto.
-
-Exemplo, depois de criar o repositório remoto:
+O `origin` configurado é `https://github.com/rg-carraro/alejoiasvendasapp.git` e a branch publicada é `master`. O usuário já autorizou essa publicação. Confira o destino antes do push:
 
 ```powershell
-git remote add origin <URL-DO-REPOSITORIO-PRIVADO>
-git push -u origin main --tags
+git remote -v
+git ls-remote --heads origin
+git push origin main:master
 ```
+
+O repositório é público; a URL do Apps Script existente no aplicativo não autentica o backend. Não publique segredos novos, arquivos de assinatura ou dados locais.
 
 ## Recuperação
 
-Para consultar a base estável sem alterar arquivos:
-
-```powershell
-git show sqlite-sync-v2-stable
-```
-
-Não use comandos destrutivos (`reset --hard`, limpeza forçada ou remoção da
-base local) sem confirmar o alvo e possuir backup.
+Use `git show sqlite-sync-v2-stable` para consultar a base estável. Não use `reset --hard` nem limpeza forçada sem conferir alvo e backup.

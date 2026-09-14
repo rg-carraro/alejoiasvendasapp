@@ -21,3 +21,5 @@ Studio. Esses arquivos não pertencem ao aplicativo e não foram sobrescritos.
 Validação: `gradlew.bat assembleDebug --offline` com o JBR do Android Studio
 concluiu com sucesso. Testes no aparelho e do fluxo real de sincronização ainda
 precisam ser executados antes de considerar a nova interface validada em uso.
+
+Após essa comparação histórica, a interface evoluiu: Financeiro reúne painel e relatórios, a busca passou à lista de vendas e Dados e sincronização ficam em ⋮. O relatório por cliente oferece histórico e PDF, sem extrato CSV. Para o estado atual, consulte docs/FUNCIONALIDADES.md e confira o Git das duas cópias.
