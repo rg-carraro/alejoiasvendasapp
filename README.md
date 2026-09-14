@@ -3,6 +3,14 @@
 Aplicativo Android para controle de vendas da AleJoias. A base oficial deste
 repositório é a versão **2.0 SQLite Sync**, validada em uso real.
 
+## Interface sincronizada
+
+A interface atual usa a paleta verde/dourado da cópia GitHub, com etiquetas de
+status nos cards e seleção de mês no dashboard financeiro. O armazenamento
+permanece em SQLite e a sincronização com Google Planilhas é opcional.
+Consulte [docs/COMPARACAO_COPIAS.md](docs/COMPARACAO_COPIAS.md) para o histórico
+da conciliação entre as duas pastas.
+
 ## Arquitetura atual
 
 - SQLite local (`alejoias_vendas.db`) como fonte operacional principal;

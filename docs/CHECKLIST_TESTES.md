@@ -19,7 +19,7 @@ Após mudanças, testar pelo menos:
 - [ ] resumo financeiro;
 - [ ] resumo mensal;
 - [ ] resumo por cliente;
-- [ ] dashboard;
+- [ ] dashboard, inclusive seleção de outro mês;
 - [ ] PDF;
 - [ ] CSV;
 - [ ] backup;
