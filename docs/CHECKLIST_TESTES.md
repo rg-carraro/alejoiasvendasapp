@@ -9,7 +9,10 @@ Após mudanças, testar pelo menos:
 - [ ] nova venda com uma foto da galeria;
 - [ ] nova venda com várias fotos da galeria;
 - [ ] nova venda com foto tirada pela câmera;
-- [ ] fotos aparecem em todas as parcelas e após reiniciar o app;
+- [ ] salvar venda com foto não apresenta divisão por zero;
+- [ ] miniatura aparece no card, busca global e histórico do cliente;
+- [ ] todas as fotos aparecem nos detalhes de cada parcela após reiniciar;
+- [ ] PDF individual do card contém todas as fotos;
 - [ ] backup SQLite contém as fotos;
 - [ ] base SQLite v1 migra para v2 sem perder vendas ou pagamentos;
 - [ ] nova venda simples;

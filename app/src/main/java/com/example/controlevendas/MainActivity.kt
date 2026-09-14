@@ -13,6 +13,7 @@ import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.RectF
 import android.media.ExifInterface
 import android.graphics.Canvas
 import androidx.core.content.FileProvider
@@ -418,6 +419,7 @@ class MainActivity : AppCompatActivity() {
 
         card.addView(texto(nome, 17f, true))
         card.addView(etiquetaStatus(venda))
+        adicionarFotoNoCard(card, venda)
         card.addView(TextView(this).apply {
             text = "$parcelaInfo\n" +
                     "Compra: ${venda.data_venda ?: "-"}\n" +
@@ -432,6 +434,19 @@ class MainActivity : AppCompatActivity() {
         })
 
         content.addView(card, margemCard())
+    }
+
+    private fun adicionarFotoNoCard(card: LinearLayout, venda: VendaRelatorio) {
+        val bytes = localDb.getPrimeiraFotoVenda(venda.id_venda_pai) ?: return
+        val miniatura = decodificarMiniatura(bytes) ?: return
+        card.addView(ImageView(this).apply {
+            setImageBitmap(miniatura)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            contentDescription = "Foto do produto; toque para ampliar"
+            setOnClickListener { mostrarFoto(bytes) }
+        }, LinearLayout.LayoutParams(dp(104), dp(104)).apply {
+            setMargins(0, dp(8), 0, dp(5))
+        })
     }
 
     private fun estaVencida(venda: VendaRelatorio): Boolean {
@@ -491,6 +506,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         adicionarOpcao("Ver detalhes") { abrirDetalhesVenda(venda) }
+        adicionarOpcao("Exportar PDF do card") { gerarPdfCard(venda) }
         adicionarOpcao("Editar card") { abrirDialogVenda(venda) }
         adicionarOpcao("Registrar pagamento") { abrirDialogPagamento(venda) }
         adicionarOpcao("Cobrar via WhatsApp") { cobrarViaWhatsApp(venda) }
@@ -548,6 +564,7 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Detalhes Da Venda")
             .setView(ScrollView(this).apply { addView(painel) })
             .setPositiveButton("Registrar Pagamento") { _, _ -> abrirDialogPagamento(venda) }
+            .setNeutralButton("PDF do card") { _, _ -> gerarPdfCard(venda) }
             .setNegativeButton("Fechar", null)
             .show()
     }
@@ -933,6 +950,7 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
 
         card.addView(texto(descricao, 18f, true))
         card.addView(etiquetaStatus(venda))
+        adicionarFotoNoCard(card, venda)
 
         val detalhes = TextView(this).apply {
             text = parcelaInfo +
@@ -1300,6 +1318,16 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         }
     }
 
+    private fun gerarPdfCard(venda: VendaRelatorio) {
+        try {
+            val file = File(cacheDir, "card_venda_${venda.id_venda.toLong()}.pdf")
+            gerarPdfGenerico(file, "Card de venda", listOf(venda), incluirFotos = true)
+            compartilharPdf(file)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Erro ao gerar PDF do card: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     private fun gerarPdfResumo(lista: List<VendaRelatorio>, nomeArquivo: String) {
         try {
             val file = File(cacheDir, nomeArquivo)
@@ -1321,7 +1349,9 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         }
     }
 
-    private fun gerarPdfGenerico(file: File, titulo: String, lista: List<VendaRelatorio>) {
+    private fun gerarPdfGenerico(
+        file: File, titulo: String, lista: List<VendaRelatorio>, incluirFotos: Boolean = false
+    ) {
         val pdf = PdfDocument()
 
         val titlePaint = Paint().apply {
@@ -1432,7 +1462,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         val vencidas = lista.count { estaVencida(it) }
         val abertas = lista.count { it.saldo > 0.0 }
         val valorMedio = if (lista.isNotEmpty()) totalVendido / lista.size else 0.0
-        val tipoRelatorio = if (mesReferencia() != "Múltiplos meses") "RELATÓRIO MENSAL" else "RELATÓRIO FINANCEIRO"
+        val tipoRelatorio = if (incluirFotos) "CARD DE VENDA" else if (mesReferencia() != "Múltiplos meses") "RELATÓRIO MENSAL" else "RELATÓRIO FINANCEIRO"
 
         canvas.drawText("◇ ALEJOIAS", 297f, y.toFloat(), titlePaint)
         y += 24
@@ -1476,6 +1506,27 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             campo("Valor Pago", moeda.format(venda.total_pago))
             campo("Saldo Faltante", moeda.format(venda.saldo))
             campo("Status", statusVenda(venda))
+            if (incluirFotos) {
+                localDb.getFotosVenda(venda.id_venda_pai).forEachIndexed foto@{ fotoIndice, bytes ->
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return@foto
+                    try {
+                        val escala = minOf(420f / bitmap.width, 260f / bitmap.height, 1f)
+                        val largura = bitmap.width * escala
+                        val altura = bitmap.height * escala
+                        garantirEspaco(altura.toInt() + 34)
+                        canvas.drawText("Foto ${fotoIndice + 1}", 50f, y.toFloat(), labelPaint)
+                        y += 12
+                        canvas.drawBitmap(
+                            bitmap, null,
+                            RectF(50f, y.toFloat(), 50f + largura, y + altura),
+                            Paint(Paint.FILTER_BITMAP_FLAG)
+                        )
+                        y += altura.toInt() + 12
+                    } finally {
+                        bitmap.recycle()
+                    }
+                }
+            }
             y += 8
             canvas.drawLine(40f, y.toFloat(), 555f, y.toFloat(), softLinePaint)
             y += 18
@@ -1677,7 +1728,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             BitmapFactory.decodeStream(entrada, null, limites)
         }
         require(limites.outWidth > 0 && limites.outHeight > 0) { "Arquivo de imagem inválido." }
-        val opcoes = BitmapFactory.Options()
+        val opcoes = BitmapFactory.Options().apply { inSampleSize = 1 }
         while (limites.outWidth / opcoes.inSampleSize > 1600 || limites.outHeight / opcoes.inSampleSize > 1600) {
             opcoes.inSampleSize *= 2
         }
@@ -1730,7 +1781,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     private fun decodificarMiniatura(bytes: ByteArray): Bitmap? {
         val limites = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, limites)
-        val opcoes = BitmapFactory.Options()
+        val opcoes = BitmapFactory.Options().apply { inSampleSize = 1 }
         while (limites.outWidth / opcoes.inSampleSize > 256 || limites.outHeight / opcoes.inSampleSize > 256) {
             opcoes.inSampleSize *= 2
         }

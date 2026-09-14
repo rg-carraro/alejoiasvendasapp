@@ -27,7 +27,9 @@ A versão estável possui, entre outras, as seguintes capacidades que devem ser 
 - fotos opcionais para novas vendas;
 - seleção de uma ou várias fotos da galeria;
 - captura pela câmera;
-- visualização nos detalhes de todas as parcelas da mesma venda;
+- miniatura no card da lista de vendas, busca global e histórico do cliente;
+- visualização de todas as fotos nos detalhes de cada parcela da mesma venda;
+- exportação de PDF individual do card com todas as fotos;
 - armazenamento offline no SQLite e inclusão no backup local.
 
 Vendas antigas ou importadas podem não ter foto. As fotos não fazem parte da

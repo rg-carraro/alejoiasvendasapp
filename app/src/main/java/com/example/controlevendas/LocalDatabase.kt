@@ -85,6 +85,16 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
         db.execSQL("CREATE INDEX idx_fotos_venda_pai ON FOTOS_VENDA(id_venda_pai)")
     }
 
+    fun getPrimeiraFotoVenda(idVendaPai: String?): ByteArray? {
+        if (idVendaPai.isNullOrBlank()) return null
+        readableDatabase.query(
+            "FOTOS_VENDA", arrayOf("imagem"), "id_venda_pai=?",
+            arrayOf(idVendaPai), null, null, "rowid", "1"
+        ).use { c ->
+            return if (c.moveToFirst()) c.getBlob(0) else null
+        }
+    }
+
     fun getFotosVenda(idVendaPai: String?): List<ByteArray> {
         if (idVendaPai.isNullOrBlank()) return emptyList()
         val fotos = mutableListOf<ByteArray>()
