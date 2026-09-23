@@ -257,6 +257,13 @@ class MainActivity : AppCompatActivity() {
         content.removeAllViews()
         statusText.text = "Menu Principal"
 
+        adicionarPainelBoasVindas()
+
+        content.addView(texto("Ações rápidas", 18f, true).apply {
+            setTextColor(corPrimariaEscura)
+            setPadding(dp(4), dp(12), dp(4), dp(2))
+        })
+
         content.addView(TextView(this).apply {
             text = "⋮"
             textSize = 30f
@@ -288,7 +295,50 @@ class MainActivity : AppCompatActivity() {
         linha2.addView(botaoQuadrado("Clientes", "Histórico", 1f) { abrirResumoClientes() })
         content.addView(linha2)
 
+        content.addView(texto("Acompanhe sua operação", 18f, true).apply {
+            setTextColor(corPrimariaEscura)
+            setPadding(dp(4), dp(16), dp(4), dp(2))
+        })
+        adicionarDashboardCompacto()
 
+        content.addView(texto(
+            "Os dados ficam no SQLite deste aparelho. Sincronize quando quiser em Dados e sincronização.",
+            13f,
+            false
+        ).apply {
+            setTextColor(corTextoSecundario)
+            setPadding(dp(8), dp(12), dp(8), dp(8))
+        })
+
+
+    }
+
+    private fun adicionarPainelBoasVindas() {
+        val painel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(18), dp(20), dp(18))
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(corPrimariaEscura, corPrimaria)
+            ).apply { cornerRadius = dp(24).toFloat() }
+        }
+        painel.addView(texto("Sua operação, em dia", 23f, true).apply {
+            setTextColor(Color.WHITE)
+        })
+        painel.addView(texto(
+            "Vendas, recebimentos e clientes em um só lugar.",
+            14f,
+            false
+        ).apply {
+            setTextColor(Color.rgb(232, 242, 237))
+            setPadding(0, dp(6), 0, dp(14))
+        })
+        painel.addView(texto(
+            "SQLite local • ${vendasCache.size} cards • ${moeda.format(vendasCache.sumOf { it.total_pago })} recebido",
+            13f,
+            true
+        ).apply { setTextColor(Color.rgb(248, 225, 181)) })
+        content.addView(painel, margemCardResumo())
     }
 
     private fun adicionarDashboardCompacto() {
@@ -332,6 +382,7 @@ class MainActivity : AppCompatActivity() {
         statusText.text = "Lista De Vendas | ${lista.size} Cards"
 
         content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
+        content.addView(cabecalhoSecao("Vendas", "Pesquise, filtre e toque em um card para ver ações."), margemCard())
 
         val pesquisaCliente = campo("Pesquisar Cliente, Descrição, Data Ou Valor").apply {
             setText(filtroCliente)
@@ -374,7 +425,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (lista.isEmpty()) {
-            content.addView(texto("Nenhuma Venda Encontrada.", 16f, false))
+            content.addView(painelMensagem("Nenhuma venda encontrada. Crie uma nova venda ou ajuste os filtros."), margemCard())
             return
         }
 
@@ -635,6 +686,20 @@ class MainActivity : AppCompatActivity() {
             })
         }
 
+    private fun cabecalhoSecao(titulo: String, subtitulo: String): LinearLayout =
+        LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(18), dp(14), dp(18), dp(14))
+            background = fundoArredondadoComBorda(corSuperficie, 22f, corBorda)
+            addView(texto(titulo, 21f, true).apply {
+                setTextColor(corPrimariaEscura)
+            })
+            addView(texto(subtitulo, 13f, false).apply {
+                setTextColor(corTextoSecundario)
+                setPadding(0, dp(5), 0, 0)
+            })
+        }
+
     
 private fun abrirDashboardFinanceiro() {
         telaAtual = "dashboard"
@@ -644,6 +709,7 @@ private fun abrirDashboardFinanceiro() {
         statusText.text = "Financeiro e Relatórios | $mesSelecionado"
 
         content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
+        content.addView(cabecalhoSecao("Financeiro e relatórios", "Indicadores clicáveis abrem os cards correspondentes."), margemCard())
         content.addView(botaoVoltar("Selecionar Outro Mês") { abrirSelecionarMesDashboard() })
         adicionarCardResumo("Mês Selecionado", mesSelecionado)
 
@@ -753,10 +819,10 @@ private fun abrirDashboardFinanceiro() {
         }
         statusText.text = "$titulo | $periodo"
         content.addView(botaoVoltar("Voltar Ao Relatório") { voltarDetalhamentoFinanceiro() })
+        content.addView(cabecalhoSecao(titulo, "$periodo • ${lista.size} cards"), margemCard())
         adicionarCardResumo(titulo, total)
-        content.addView(texto("$periodo • ${lista.size} cards", 14f, false), margemCard())
         if (lista.isEmpty()) {
-            content.addView(texto("Nenhum card encontrado.", 16f, false))
+            content.addView(painelMensagem("Nenhum card encontrado para este indicador."), margemCard())
         } else {
             lista.forEach { adicionarCardVenda(it) }
         }
@@ -839,6 +905,7 @@ private fun abrirDashboardFinanceiro() {
         statusText.text = "Resumo Por Período"
 
         content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
+        content.addView(cabecalhoSecao("Resumo por período", "Compare vendas, recebimentos e saldos em uma janela de datas."), margemCard())
         content.addView(botaoVoltar("Alterar Período") { abrirFiltroResumoPeriodo() })
 
         val lista = vendasCache.filter { venda ->
@@ -877,6 +944,7 @@ private fun abrirResumoMes() {
         statusText.text = "Relatório Mensal"
 
         content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
+        content.addView(cabecalhoSecao("Relatório mensal", "Selecione um mês para acompanhar o fechamento financeiro."), margemCard())
 
         val mesSelecionado = mesResumoSelecionado ?: mesAtual
         val vendasMes = vendasCache.filter { (it.data_venda ?: "").startsWith(mesSelecionado) }
@@ -944,6 +1012,7 @@ private fun abrirResumoMes() {
         statusText.text = "Relatório Por Cliente"
 
         content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
+        content.addView(cabecalhoSecao("Resumo por cliente", "Consulte o histórico e o saldo de cada cliente."), margemCard())
 
         val pesquisaCliente = campo("Pesquisar Cliente").apply {
             setText(filtroClienteResumo)
@@ -979,7 +1048,7 @@ private fun abrirResumoMes() {
             .toSortedMap()
 
         if (agrupado.isEmpty()) {
-            content.addView(texto("Nenhum Cliente Encontrado.", 16f, false))
+            content.addView(painelMensagem("Nenhum cliente encontrado. Tente outro nome ou cadastre uma nova venda."), margemCard())
             return
         }
 
@@ -1020,6 +1089,7 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
         statusText.text = "Histórico Do Cliente"
 
         content.addView(botaoVoltar("Voltar Ao Resumo Por Cliente") { abrirResumoClientes() })
+        content.addView(cabecalhoSecao("Histórico de $cliente", "Vendas, pagamentos e saldo consolidados."), margemCard())
 
         val totalVendido = vendas.sumOf { it.valor_total }
         val totalRecebido = vendas.sumOf { it.total_pago }
@@ -1164,8 +1234,14 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         statusText.text = "Dados Locais E Sincronização"
 
         content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
+        content.addView(cabecalhoSecao("Dados e sincronização", "O SQLite é a base principal; a planilha é sincronizada quando você escolher."), margemCard())
         adicionarCardResumo("Cards No SQLite", vendasCache.size.toString())
         adicionarCardResumo("Alterações Pendentes", localDb.pendingSyncCount().toString())
+
+        content.addView(texto("Sincronização", 18f, true).apply {
+            setTextColor(corPrimariaEscura)
+            setPadding(dp(4), dp(12), dp(4), dp(2))
+        })
 
         content.addView(botaoVoltar("Importar Planilha → SQLite") {
             confirmarImportacaoPlanilha()
@@ -1189,6 +1265,11 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
 
         content.addView(botaoVoltar("Compartilhar Backup SQLite") {
             compartilharBackupSqlite()
+        })
+
+        content.addView(texto("Orientação", 18f, true).apply {
+            setTextColor(corPrimariaEscura)
+            setPadding(dp(4), dp(16), dp(4), dp(2))
         })
 
         content.addView(texto(

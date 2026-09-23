@@ -11,6 +11,12 @@ permanece em SQLite e a sincronização com Google Planilhas é opcional.
 Consulte [docs/COMPARACAO_COPIAS.md](docs/COMPARACAO_COPIAS.md) para o histórico
 da conciliação entre as duas pastas.
 
+O menu inicial também usa uma hierarquia de painel: saudação, resumo rápido,
+ações principais e indicadores operacionais. Essa organização segue o padrão de
+leitura do MVP de gestão clínica, mantendo a identidade AleJoias em verde,
+dourado, creme e sua marca existente. Nenhuma regra de vendas, pagamento,
+parcelamento ou sincronização foi alterada.
+
 ## Fotos da venda
 
 Uma nova venda pode incluir fotos do produto, mas elas são opcionais. É possível escolher várias

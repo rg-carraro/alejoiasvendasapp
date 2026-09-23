@@ -21,3 +21,21 @@ BACKEND
 OBSERVAÇÃO DE BUILD
 - O código foi preparado para Android Studio.
 - Não foi possível executar o Gradle completo neste ambiente porque ele não possui acesso de rede para baixar a distribuição/dependências do Gradle.
+22/09/2026 — Hierarquia visual do menu inicial
+- Adicionado painel de saudação com resumo de cards e recebimentos.
+- Agrupadas ações rápidas e indicadores operacionais com títulos de seção.
+- Mantida a identidade visual verde/dourado e a arquitetura SQLite Sync v2.
+- Build debug validado com Gradle 8.7; avisos existentes de compileSdk 35 e APIs Kotlin permanecem.
+
+22/09/2026 — Documentação de evolução visual
+- Adicionado `docs/INTERFACE_VISUAL.md` com identidade, mapa de arquivos, padrões
+  de componentes, limites de segurança/dados e checklist para futuras mudanças.
+
+22/09/2026 — Hierarquia visual nas telas restantes
+- Padronizados cabeçalhos de seção em vendas, financeiro, detalhamentos,
+  relatórios, histórico de cliente e dados/sincronização.
+- Estados vazios agora usam painéis explicativos com ação orientada.
+- A identidade verde/dourado, os cards financeiros e os atalhos existentes foram
+  preservados; nenhuma regra SQLite, pagamento, ID ou sincronização foi alterada.
+- `assembleDebug` validado após a alteração. Permanecem somente os avisos já
+  conhecidos de `compileSdk 35`, `onBackPressed` e parâmetro legado não utilizado.

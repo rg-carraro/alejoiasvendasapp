@@ -20,12 +20,13 @@ Toda alteração futura deve ser **pontual** e feita sobre a versão SQLite Sync
 
 Antes de alterar:
 1. Ler a implementação existente.
-2. Identificar o menor conjunto de arquivos necessário.
-3. Preservar todas as funcionalidades existentes.
-4. Evitar refatorações amplas sem necessidade.
-5. Não substituir componentes funcionais por versões simplificadas.
-6. Manter compatibilidade com SQLite e Google Planilhas.
-7. Não alterar a estrutura dos IDs sem necessidade.
+2. Ler `docs/INTERFACE_VISUAL.md` quando a alteração envolver interface.
+3. Identificar o menor conjunto de arquivos necessário.
+4. Preservar todas as funcionalidades existentes.
+5. Evitar refatorações amplas sem necessidade.
+6. Não substituir componentes funcionais por versões simplificadas.
+7. Manter compatibilidade com SQLite e Google Planilhas.
+8. Não alterar a estrutura dos IDs sem necessidade.
 
 ## Arquitetura
 

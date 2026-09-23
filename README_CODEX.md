@@ -8,6 +8,7 @@ Esta pasta é o repositório atual e oficial do projeto **AleJoias Vendas SQLite
    `C:\Pessoal\AleJoias\projetos\aleajoiasvendas`.
 2. Use esta própria pasta como diretório de trabalho; não é necessário copiar ou extrair outro pacote.
 3. Antes de realizar alterações, leia `AGENTS.md` e a documentação da pasta `docs/`.
+   Para mudanças de interface, leia também `docs/INTERFACE_VISUAL.md`.
 4. Considere o código presente neste repositório como a base oficial estável.
 
 ## Princípio
