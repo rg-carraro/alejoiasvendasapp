@@ -37,3 +37,4 @@ pela interface. Guarde uma cópia fora do aparelho usando Compartilhar backup.
 
 Veja [escopo comercial](docs/COMERCIAL.md), [funcionalidades](docs/FUNCIONALIDADES.md),
 [checklist](docs/CHECKLIST_TESTES.md) e [changelog](CHANGELOG_COMERCIAL.md).
+As decisões de produto e evolução estão na [estratégia comercial](docs/ESTRATEGIA_COMERCIAL.md).

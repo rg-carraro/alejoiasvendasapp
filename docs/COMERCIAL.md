@@ -3,6 +3,10 @@
 Criada em 24/09/2026 a partir do marco AleJoias, por solicitação do usuário.
 Mantém formato de navegação e funcionalidades locais com identidade genérica.
 
+A direção do produto, a separação das duas linhas e os próximos passos estão
+consolidados em [ESTRATEGIA_COMERCIAL.md](ESTRATEGIA_COMERCIAL.md), distinguindo
+decisões aprovadas de propostas ainda não definidas.
+
 ## Identidade e isolamento
 
 Nome Vendas Simples, paleta azul/cinza, ícone vetorial de comprovante com check.

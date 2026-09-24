@@ -1,5 +1,14 @@
 # Histórico Vendas Simples
 
+## 24/09/2026 — Estratégia comercial documentada
+
+- Consolidados nome, identidade, escopo local e separação das branches em
+  docs/ESTRATEGIA_COMERCIAL.md.
+- Registrados estado da entrega, limitações do backup e validações pendentes.
+- Próximos passos apresentados como propostas; preço, distribuição e lançamento
+  permanecem sem definição. Nenhuma mudança no aplicativo neste registro.
+- Validação documental: revisão de conteúdo, links locais e git diff --check.
+
 ## 24/09/2026 — 1.0-comercial
 
 - Branch comercial derivada da tag alejoias-v2-marco-2026-09-24.
