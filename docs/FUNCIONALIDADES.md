@@ -34,7 +34,7 @@ Sem vínculo completo, mantém apenas os valores do card, sem estimar o total.
 - seleção de uma ou várias fotos da galeria;
 - captura pela câmera;
 - miniatura no card da lista de vendas, pesquisa e histórico do cliente;
-- toque na miniatura ou em **Ver fotos da venda** abre os detalhes com todas
+- toque na miniatura ou em **Ver fotos** abre os detalhes com todas
   as fotos, contagem e orientação para deslizar; cada foto pode ser ampliada;
 - visualização de todas as fotos nos detalhes de cada parcela da mesma venda;
 - exportação de PDF individual do card e relatórios com todas as fotos dos registros;
@@ -62,7 +62,7 @@ sincronização com a planilha.
 O acesso **Financeiro / Relatórios** reúne o painel mensal e botões iguais
 para relatório por período, mensal, por cliente e PDF financeiro. CSV continua
 disponível no relatório mensal e em Dados; o relatório por cliente mantém PDF e histórico.
-Dados e sincronização ficam no botão de opções `⋮` do menu principal.
+Dados e sincronização ficam no botão de opções `⋮` do cabeçalho AleJoias.
 
 O PDF financeiro usa a mesma lista do painel, filtrada pela data da venda no
 mês selecionado. Valores vendido, recebido, saldo, clientes em débito, vencidas

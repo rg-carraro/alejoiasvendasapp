@@ -17,6 +17,9 @@ import android.graphics.RectF
 import android.media.ExifInterface
 import android.graphics.Canvas
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import java.io.File
 import java.io.FileOutputStream
 import android.graphics.Paint
@@ -146,18 +149,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun montarTela() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         val root = FrameLayout(this).apply {
             setBackgroundColor(corFundo)
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
+            val seguros = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val teclado = insets.getInsets(WindowInsetsCompat.Type.ime())
+            view.setPadding(seguros.left, seguros.top, seguros.right, maxOf(seguros.bottom, teclado.bottom))
+            insets
         }
 
         val mainContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(8), dp(16), dp(16))
+            setPadding(dp(16), dp(16), dp(16), dp(16))
             setBackgroundColor(Color.TRANSPARENT)
         }
 
         val header = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
+            orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
             setPadding(dp(10), dp(10), dp(10), dp(12))
             background = fundoArredondadoComBorda(corSuperficie, 28f, corBorda)
@@ -178,8 +190,35 @@ class MainActivity : AppCompatActivity() {
             setTextColor(corDestaque)
         }
 
-        header.addView(titulo)
-        header.addView(subtitulo)
+        val marca = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            addView(titulo)
+            addView(subtitulo)
+        }
+        header.addView(marca, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        header.addView(TextView(this).apply {
+            text = "⋮"
+            textSize = 30f
+            gravity = Gravity.CENTER
+            setTextColor(corPrimariaEscura)
+            contentDescription = "Mais opções"
+            setPadding(0, 0, 0, 0)
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { ancora ->
+                PopupMenu(this@MainActivity, ancora).apply {
+                    menu.add("Dados e sincronização")
+                    setOnMenuItemClickListener {
+                        abrirBackupLocal()
+                        true
+                    }
+                    show()
+                }
+            }
+        }, LinearLayout.LayoutParams(dp(48), dp(48)))
+
+
 
         statusText = TextView(this).apply {
             text = ""
@@ -233,33 +272,13 @@ class MainActivity : AppCompatActivity() {
         )
 
         setContentView(root)
+        ViewCompat.requestApplyInsets(root)
     }
 
     private fun abrirMenuPrincipal() {
         telaAtual = "menu"
         content.removeAllViews()
         statusText.text = "Menu Principal"
-
-        content.addView(TextView(this).apply {
-            text = "⋮"
-            textSize = 30f
-            gravity = Gravity.END or Gravity.CENTER_VERTICAL
-            setTextColor(corPrimariaEscura)
-            contentDescription = "Mais opções"
-            setPadding(dp(20), dp(4), dp(20), dp(4))
-            isClickable = true
-            isFocusable = true
-            setOnClickListener { ancora ->
-                PopupMenu(this@MainActivity, ancora).apply {
-                    menu.add("Dados e sincronização")
-                    setOnMenuItemClickListener {
-                        abrirBackupLocal()
-                        true
-                    }
-                    show()
-                }
-            }
-        }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52)))
 
         val linha1 = linhaBotoes()
         linha1.addView(botaoQuadrado("Vendas", "Lista", 1f) { abrirListaVendas() })
@@ -455,7 +474,11 @@ class MainActivity : AppCompatActivity() {
     private fun adicionarFotoNoCard(card: LinearLayout, venda: VendaRelatorio) {
         val bytes = localDb.getPrimeiraFotoVenda(venda.id_venda_pai) ?: return
         val miniatura = decodificarMiniatura(bytes) ?: return
-        card.addView(ImageView(this).apply {
+        val linhaFoto = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        linhaFoto.addView(ImageView(this).apply {
             setImageBitmap(miniatura)
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Foto do produto; toque para ver todas as fotos da venda"
@@ -463,7 +486,13 @@ class MainActivity : AppCompatActivity() {
         }, LinearLayout.LayoutParams(dp(104), dp(104)).apply {
             setMargins(0, dp(8), 0, dp(5))
         })
-        card.addView(botaoVoltar("Ver fotos da venda") { abrirDetalhesVenda(venda) })
+        linhaFoto.addView(botaoVoltar("Ver fotos") { abrirDetalhesVenda(venda) }.apply {
+            contentDescription = "Ver todas as fotos da venda"
+            minWidth = 0
+        }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+            setMargins(dp(12), 0, 0, 0)
+        })
+        card.addView(linhaFoto)
     }
 
     private fun estaVencida(venda: VendaRelatorio): Boolean {

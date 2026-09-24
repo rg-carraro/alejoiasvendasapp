@@ -43,6 +43,13 @@ sem somar espaçamento adicional.
 
 ## Mapa de implementação
 
+Em 24/09/2026, o botão **Ver fotos** foi posicionado ao lado da miniatura,
+com largura limitada ao espaço restante e área de toque preservada. Os três
+pontinhos ficam dentro do cabeçalho, à direita da marca, acessíveis nas telas.
+O cabeçalho tem 16 dp de margem superior dentro da área segura. Insets das
+barras do sistema e do recorte da câmera protegem o conteúdo, inclusive em
+paisagem; o teclado também é considerado no espaço inferior.
+
 - `MainActivity.kt`: composição das telas, tema atual, cards, botões, diálogos,
   carregamento do SQLite e navegação por estados (`telaAtual`).
 - `LocalDatabase.kt`: fonte operacional dos dados; a UI apenas consulta e grava

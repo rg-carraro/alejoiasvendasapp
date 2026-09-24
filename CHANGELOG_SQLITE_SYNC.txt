@@ -74,3 +74,10 @@ OBSERVAÇÃO DE BUILD
 - Sem vínculo completo, não estima totais; parcela desconhecida é informada.
 - Mantidos bloqueio de cobrança quitada, seleção manual no WhatsApp e dados SQLite.
 - assembleDebug e revisão do diff OK. Conferência no WhatsApp do telefone pendente.
+
+24/09/2026 — Cards compactos e cabeçalho em área segura
+- Botão Ver fotos ao lado da miniatura, mantendo abertura de todas as fotos.
+- Menu de três pontinhos movido para dentro do cabeçalho AleJoias.
+- Margem superior de 16 dp e aplicação de insets das barras, câmera e teclado.
+- Sem alterações no SQLite, pagamentos, PDFs ou sincronização.
+- assembleDebug OK; conferência no telefone (câmera, rotação e fonte ampliada) pendente.

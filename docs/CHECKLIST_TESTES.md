@@ -12,7 +12,7 @@ Após mudanças, testar pelo menos:
 - [ ] salvar venda com foto não apresenta divisão por zero;
 - [ ] miniatura aparece no card, pesquisa da lista e histórico do cliente;
 - [ ] todas as fotos aparecem nos detalhes de cada parcela após reiniciar;
-- [ ] tocar na miniatura ou em Ver fotos da venda abre todas as fotos; deslizar
+- [ ] tocar na miniatura ou em Ver fotos abre todas as fotos; deslizar
       até a última e ampliar cada uma, também na pesquisa e no histórico;
 - [ ] PDF individual do card contém todas as fotos;
 - [ ] PDFs de resumo, mês e cliente incluem fotos dos respectivos cards;
@@ -49,6 +49,11 @@ Após mudanças, testar pelo menos:
 - [ ] após usar filtro por período, PDF financeiro e mensal mantêm o próprio
       mês e período; mês vazio mostra referência correta e totais zerados;
 - [ ] telas sem imagem de marca-d'água no topo, mantendo título, cores e ícone;
+- [ ] Ver fotos fica ao lado da miniatura e abre todas as imagens, inclusive
+      em telefone estreito e com fonte ampliada;
+- [ ] três pontinhos no cabeçalho abrem Dados e sincronização;
+- [ ] cabeçalho não sobrepõe câmera/barra de status em retrato ou paisagem;
+      verificar também teclado aberto e navegação por gestos ou três botões;
 - [ ] tocar em Vendido no mês lista os cards e soma o valor vendido exibido;
 - [ ] tocar em Recebido no mês lista os cards pagos e soma o valor recebido exibido;
 - [ ] valores e contagens do painel, relatório mensal e por período abrem
