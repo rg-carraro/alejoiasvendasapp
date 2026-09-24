@@ -13,7 +13,7 @@ import java.util.Locale
 class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
 
     companion object {
-        const val DB_NAME = "alejoias_vendas.db"
+        const val DB_NAME = "vendas_simples.db"
         private const val DB_VERSION = 2
     }
 
@@ -53,7 +53,7 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
 
         criarTabelaFotos(db)
 
-        // Metadados internos de sincronização. Não fazem parte da planilha.
+        // Metadados legados preservados para manter a estrutura SQLite v2. Sem integração remota.
         db.execSQL("""
             CREATE TABLE SYNC_DIRTY (
                 entity_type TEXT NOT NULL,
@@ -286,92 +286,6 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
         }
     }
 
-    fun exportSyncData(): SyncExportResponse {
-        val clientes = mutableListOf<ClienteSync>()
-        val vendas = mutableListOf<VendaSync>()
-        val pagamentos = mutableListOf<PagamentoSync>()
-        val db = readableDatabase
-
-        db.rawQuery("SELECT id_cliente,nome FROM CLIENTES ORDER BY id_cliente", null).use { c ->
-            while (c.moveToNext()) clientes += ClienteSync(c.getString(0), c.getString(1))
-        }
-        db.rawQuery("SELECT id_venda,id_cliente,descricao,data_venda,data_vencimento,valor_total,parcela_atual,parcelas,id_venda_pai FROM VENDAS ORDER BY id_venda", null).use { c ->
-            while (c.moveToNext()) vendas += VendaSync(
-                id_venda = c.getString(0), id_cliente = c.getString(1), descricao = c.getString(2) ?: "",
-                data_venda = c.getString(3) ?: "", data_vencimento = c.getString(4) ?: "", valor_total = c.getDouble(5),
-                parcela_atual = c.getInt(6), parcelas = c.getInt(7), id_venda_pai = c.getString(8) ?: ""
-            )
-        }
-        db.rawQuery("SELECT id_pagamento,id_venda,data_pagamento,valor_pago FROM PAGAMENTOS ORDER BY id_pagamento", null).use { c ->
-            while (c.moveToNext()) pagamentos += PagamentoSync(c.getString(0), c.getString(1), c.getString(2) ?: "", c.getDouble(3))
-        }
-        return SyncExportResponse(true, clientes, vendas, pagamentos)
-    }
-
-    fun replaceFromRemote(remote: SyncExportResponse) {
-        val db = writableDatabase
-        db.beginTransaction()
-        try {
-            db.delete("PAGAMENTOS", null, null)
-            db.delete("VENDAS", null, null)
-            db.delete("CLIENTES", null, null)
-            remote.clientes.forEach { upsertCliente(db, it) }
-            remote.vendas.forEach { upsertVenda(db, it) }
-            remote.pagamentos.forEach { upsertPagamento(db, it) }
-            clearSyncMetadata(db)
-            db.setTransactionSuccessful()
-        } finally {
-            db.endTransaction()
-        }
-    }
-
-    /** Mescla dados remotos sem sobrescrever registros modificados localmente. */
-    fun mergeFromRemote(remote: SyncExportResponse) {
-        val db = writableDatabase
-        db.beginTransaction()
-        try {
-            remote.clientes.forEach { item -> if (canAcceptRemote(db, "CLIENTES", item.id_cliente)) upsertCliente(db, item) }
-            remote.vendas.forEach { item -> if (canAcceptRemote(db, "VENDAS", item.id_venda)) upsertVenda(db, item) }
-            remote.pagamentos.forEach { item -> if (canAcceptRemote(db, "PAGAMENTOS", item.id_pagamento)) upsertPagamento(db, item) }
-            db.setTransactionSuccessful()
-        } finally {
-            db.endTransaction()
-        }
-    }
-
-    fun markAllSynced() {
-        val db = writableDatabase
-        clearSyncMetadata(db)
-    }
-
-    fun pendingSyncCount(): Int {
-        val db = readableDatabase
-        val dirty = scalarCount(db, "SELECT COUNT(*) FROM SYNC_DIRTY")
-        val deletions = scalarCount(db, "SELECT COUNT(*) FROM SYNC_DELETIONS")
-        return dirty + deletions
-    }
-
-    private fun upsertCliente(db: SQLiteDatabase, item: ClienteSync) {
-        db.insertWithOnConflict("CLIENTES", null, ContentValues().apply {
-            put("id_cliente", item.id_cliente); put("nome", item.nome)
-        }, SQLiteDatabase.CONFLICT_REPLACE)
-    }
-
-    private fun upsertVenda(db: SQLiteDatabase, item: VendaSync) {
-        db.insertWithOnConflict("VENDAS", null, ContentValues().apply {
-            put("id_venda", item.id_venda); put("id_cliente", item.id_cliente); put("descricao", item.descricao)
-            put("data_venda", item.data_venda); put("data_vencimento", item.data_vencimento); put("valor_total", item.valor_total)
-            put("parcela_atual", item.parcela_atual); put("parcelas", item.parcelas); put("id_venda_pai", item.id_venda_pai)
-        }, SQLiteDatabase.CONFLICT_REPLACE)
-    }
-
-    private fun upsertPagamento(db: SQLiteDatabase, item: PagamentoSync) {
-        db.insertWithOnConflict("PAGAMENTOS", null, ContentValues().apply {
-            put("id_pagamento", item.id_pagamento); put("id_venda", item.id_venda)
-            put("data_pagamento", item.data_pagamento); put("valor_pago", item.valor_pago)
-        }, SQLiteDatabase.CONFLICT_REPLACE)
-    }
-
     private fun obterOuCriarCliente(db: SQLiteDatabase, nome: String, markAsDirty: Boolean): String {
         val alvo = normalizar(nome)
         db.rawQuery("SELECT id_cliente,nome FROM CLIENTES", null).use { c ->
@@ -408,19 +322,6 @@ class LocalDatabase(context: Context) : SQLiteOpenHelper(context, DB_NAME, null,
         }, SQLiteDatabase.CONFLICT_REPLACE)
         db.delete("SYNC_DIRTY", "entity_type=? AND entity_id=?", arrayOf(type, id))
     }
-
-    private fun canAcceptRemote(db: SQLiteDatabase, type: String, id: String): Boolean {
-        val dirty = db.rawQuery("SELECT 1 FROM SYNC_DIRTY WHERE entity_type=? AND entity_id=?", arrayOf(type, id)).use { it.moveToFirst() }
-        val deleted = db.rawQuery("SELECT 1 FROM SYNC_DELETIONS WHERE entity_type=? AND entity_id=?", arrayOf(type, id)).use { it.moveToFirst() }
-        return !dirty && !deleted
-    }
-
-    private fun clearSyncMetadata(db: SQLiteDatabase) {
-        db.delete("SYNC_DIRTY", null, null)
-        db.delete("SYNC_DELETIONS", null, null)
-    }
-
-    private fun scalarCount(db: SQLiteDatabase, sql: String): Int = db.rawQuery(sql, null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
     private fun somarDias(dataTexto: String, dias: Int): String {
         return try {

@@ -1,6 +1,6 @@
 # Funcionalidades existentes
 
-A versão estável possui, entre outras, as seguintes capacidades que devem ser preservadas:
+A versão comercial preserva, entre outras, as seguintes capacidades que devem ser preservadas:
 
 ## Vendas
 - nova venda;
@@ -40,8 +40,7 @@ Sem vínculo completo, mantém apenas os valores do card, sem estimar o total.
 - exportação de PDF individual do card e relatórios com todas as fotos dos registros;
 - armazenamento offline no SQLite e inclusão no backup local.
 
-Vendas antigas ou importadas podem não ter foto. As fotos não fazem parte da
-sincronização com a planilha.
+Vendas podem não ter foto. Fotos ficam exclusivamente no SQLite e no backup local.
 
 ## Pagamentos
 - pagamento parcial;
@@ -62,7 +61,7 @@ sincronização com a planilha.
 O acesso **Financeiro / Relatórios** reúne o painel mensal e botões iguais
 para relatório por período, mensal, por cliente e PDF financeiro. CSV continua
 disponível no relatório mensal e em Dados; o relatório por cliente mantém PDF e histórico.
-Dados e sincronização ficam no botão de opções `⋮` do cabeçalho AleJoias.
+Dados e backup ficam no botão de opções `⋮` do cabeçalho Vendas Simples.
 
 O PDF financeiro usa a mesma lista do painel, filtrada pela data da venda no
 mês selecionado. Valores vendido, recebido, saldo, clientes em débito, vencidas
@@ -76,11 +75,9 @@ O PDF mensal também recebe explicitamente o mês selecionado.
 - compartilhamento;
 - backup local.
 
-## Integração
-- importação da planilha para SQLite;
-- envio SQLite para planilha;
-- sincronização;
-- Apps Script.
+## Armazenamento local
+
+SQLite local, sem backend de planilha. Backup e CSV em Dados e backup.
 
 ## Notificações
 - alertas relacionados a vencimentos.

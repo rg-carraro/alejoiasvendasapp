@@ -1,3 +1,6 @@
+> Documento histórico da base AleJoias. Não descreve o estado da branch comercial.
+ > Para Vendas Simples, consulte README.md e docs/COMERCIAL.md.
+
 # AleJoias Vendas — SQLite + Sincronização com Google Planilhas
 
 Esta versão mantém a estrutura de IDs existente na planilha e passa a usar o SQLite local como base principal do aplicativo.

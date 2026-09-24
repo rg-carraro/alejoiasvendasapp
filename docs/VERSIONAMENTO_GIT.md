@@ -1,32 +1,22 @@
-# Versionamento Git
+# Versionamento das duas linhas
 
-A tag `sqlite-sync-v2-stable` identifica a base SQLite Sync v2 validada. Mudanças devem ser pontuais e reversíveis.
+- `master`: AleJoias Vendas com SQLite e Google Planilhas.
+- Tag imutável `alejoias-v2-marco-2026-09-24`: marco anterior à linha comercial.
+- `comercial`: Vendas Simples, identidade própria e operações locais.
 
-## Fluxo atual
+Remoto: https://github.com/rg-carraro/alejoiasvendasapp.git
 
-1. Confira `git status` e o código afetado; isole o trabalho em branch quando necessário.
-2. Revise `git diff`, valide com `gradlew.bat assembleDebug` e execute o checklist aplicável em `docs/CHECKLIST_TESTES.md`.
-3. Faça commits descritivos sem APKs, caches, configurações locais ou credenciais.
-4. Antes de sincronizar a cópia do Android Studio em `C:\Users\rgcar\git\alejoiasvendasapp`, confira sua árvore de trabalho. Prefira avanço rápido sem descartar alterações locais.
-5. Toda alteração concluída deve ser documentada e publicada no GitHub, conforme autorização permanente do usuário em 24/09/2026. Atualize o changelog e a documentação afetada, confira o remoto e publique os commits sem pedir nova confirmação. Informe impedimentos e quais testes ainda dependem do aparelho.
-
-## Remoto
-
-O `origin` configurado é `https://github.com/rg-carraro/alejoiasvendasapp.git` e a branch publicada é `master`. O usuário já autorizou essa publicação. Confira o destino antes do push:
+Antes de publicar, conferir git status, branch, diff e estado remoto. Documentar,
+validar com assembleDebug e publicar toda mudança concluída (autorização permanente).
+Não integrar a remoção da planilha de volta à master. Não versionar APK, caches,
+configurações locais, dados de clientes ou credenciais.
 
 ```powershell
+git branch --show-current
 git remote -v
 git ls-remote --heads origin
-git push origin HEAD:master
+git push origin comercial
 ```
 
-O repositório é público; a URL do Apps Script existente no aplicativo não autentica o backend. Não publique segredos novos, arquivos de assinatura ou dados locais.
-
-## Recuperação
-
-O marco de 24/09/2026 está na tag `alejoias-v2-marco-2026-09-24`.
-Consulte `docs/MARCO_2026-09-24.md`. A branch `master` mantém AleJoias;
-`comercial` é a linha independente Vendas Simples, sem backend de planilha.
-Confira a branch antes do push e nunca publique a versão comercial em master.
-
-Use `git show sqlite-sync-v2-stable` para consultar a base estável. Não use `reset --hard` nem limpeza forçada sem conferir alvo e backup.
+Não usar push forçado nem mover a tag do marco. Para voltar ao AleJoias, com
+árvore limpa, usar git switch master. Leia docs/MARCO_2026-09-24.md.

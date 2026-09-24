@@ -17,7 +17,6 @@ data class VendaRelatorio(
 )
 
 data class NovaVendaRequest(
-    val action: String = "nova_venda",
     val nome_cliente: String,
     val descricao: String,
     val data_venda: String,
@@ -26,7 +25,6 @@ data class NovaVendaRequest(
 )
 
 data class AtualizarVendaRequest(
-    val action: String = "atualizar_venda",
     val id_venda: String,
     val nome_cliente: String,
     val descricao: String,
@@ -38,13 +36,11 @@ data class AtualizarVendaRequest(
 )
 
 data class NovoPagamentoRequest(
-    val action: String = "novo_pagamento",
     val id_venda: String,
     val data_pagamento: String,
     val valor_pago: Double
 )
 
 data class DeletarVendaRequest(
-    val action: String = "deletar_venda",
     val id_venda: String
 )

@@ -1,3 +1,6 @@
+> Documento histórico da base AleJoias. Não descreve o estado da branch comercial.
+ > Para Vendas Simples, consulte README.md e docs/COMERCIAL.md.
+
 # Histórico técnico resumido
 
 ## Fase inicial

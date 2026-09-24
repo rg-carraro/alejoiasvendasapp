@@ -2,29 +2,29 @@
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:navigationBarColor">#F7F3EC</item>
-        <item name="android:statusBarColor">#F7F3EC</item>
+        <item name="android:navigationBarColor">#F5F7FB</item>
+        <item name="android:statusBarColor">#F5F7FB</item>
         <item name="android:windowLightNavigationBar">true</item>
-        <item name="colorPrimary">#145A4A</item>
-        <item name="colorPrimaryVariant">#0B3D33</item>
+        <item name="colorPrimary">#2563EB</item>
+        <item name="colorPrimaryVariant">#1E3A5F</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#B88A44</item>
+        <item name="colorSecondary">#475569</item>
         <item name="colorOnSecondary">#FFFFFF</item>
-        <item name="colorAccent">#B88A44</item>
-        <item name="android:windowBackground">#F7F3EC</item>
-        <item name="materialAlertDialogTheme">@style/AleJoiasAlertDialog</item>
+        <item name="colorAccent">#475569</item>
+        <item name="android:windowBackground">#F5F7FB</item>
+        <item name="materialAlertDialogTheme">@style/VendasSimplesAlertDialog</item>
     </style>
 
-    <style name="AleJoiasAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="colorPrimary">#145A4A</item>
-        <item name="colorSecondary">#B88A44</item>
-        <item name="colorSurface">#FFFDF9</item>
-        <item name="android:textColorPrimary">#27312E</item>
-        <item name="android:textColorSecondary">#646C68</item>
-        <item name="shapeAppearanceOverlay">@style/AleJoiasDialogShape</item>
+    <style name="VendasSimplesAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">#2563EB</item>
+        <item name="colorSecondary">#475569</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="android:textColorPrimary">#1E293B</item>
+        <item name="android:textColorSecondary">#64748B</item>
+        <item name="shapeAppearanceOverlay">@style/VendasSimplesDialogShape</item>
     </style>
 
-    <style name="AleJoiasDialogShape">
+    <style name="VendasSimplesDialogShape">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">20dp</item>
     </style>

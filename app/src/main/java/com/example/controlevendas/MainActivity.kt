@@ -36,24 +36,21 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import java.io.ByteArrayOutputStream
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    // Paleta visual AleJoias.
-    private val corFundo = Color.rgb(247, 243, 236)
-    private val corSuperficie = Color.rgb(255, 253, 249)
-    private val corPrimaria = Color.rgb(20, 90, 74)
-    private val corPrimariaEscura = Color.rgb(11, 61, 51)
-    private val corDestaque = Color.rgb(184, 138, 68)
-    private val corTexto = Color.rgb(39, 49, 46)
-    private val corTextoSecundario = Color.rgb(100, 108, 104)
-    private val corBorda = Color.rgb(222, 211, 194)
+    // Paleta visual Vendas Simples.
+    private val corFundo = Color.rgb(245, 247, 251)
+    private val corSuperficie = Color.rgb(255, 255, 255)
+    private val corPrimaria = Color.rgb(37, 99, 235)
+    private val corPrimariaEscura = Color.rgb(30, 58, 95)
+    private val corDestaque = Color.rgb(71, 85, 105)
+    private val corTexto = Color.rgb(30, 41, 59)
+    private val corTextoSecundario = Color.rgb(100, 116, 139)
+    private val corBorda = Color.rgb(203, 213, 225)
     private val corQuitado = Color.rgb(226, 244, 235)
     private val corVencido = Color.rgb(253, 232, 229)
 
@@ -126,10 +123,8 @@ class MainActivity : AppCompatActivity() {
         montarTela()
         criarCanalNotificacoes()
         localDb = LocalDatabase(this)
-        val bancoVazio = localDb.isEmpty()
         carregarRelatorio {
             abrirMenuPrincipal()
-            if (bancoVazio) sugerirImportacaoInicial()
         }
         handler.postDelayed(autoRefreshRunnable, 5 * 60 * 1000L)
     }
@@ -176,7 +171,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val titulo = TextView(this).apply {
-            text = "AleJoias Vendas"
+            text = "Vendas Simples"
             textSize = if (resources.displayMetrics.widthPixels < 900) 24f else 29f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
@@ -184,7 +179,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val subtitulo = TextView(this).apply {
-            text = "ERP Simples De Vendas"
+            text = "Seu controle de vendas"
             textSize = 14f
             gravity = Gravity.CENTER
             setTextColor(corDestaque)
@@ -208,7 +203,7 @@ class MainActivity : AppCompatActivity() {
             isFocusable = true
             setOnClickListener { ancora ->
                 PopupMenu(this@MainActivity, ancora).apply {
-                    menu.add("Dados e sincronização")
+                    menu.add("Dados e backup")
                     setOnMenuItemClickListener {
                         abrirBackupLocal()
                         true
@@ -710,7 +705,7 @@ private fun abrirDashboardFinanceiro() {
         content.addView(botaoVoltar("Relatório mensal") { abrirResumoMes() }, margemCard())
         content.addView(botaoVoltar("Relatório por cliente") { abrirResumoClientes() }, margemCard())
         content.addView(botaoVoltar("Gerar PDF financeiro") {
-            gerarPdfResumo(vendasDashboard, "resumo_alejoias_${mesSelecionado}.pdf", mesSelecionado)
+            gerarPdfResumo(vendasDashboard, "resumo_vendas_simples_${mesSelecionado}.pdf", mesSelecionado)
         }, margemCard())
     }
 
@@ -1151,11 +1146,11 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         } else ""
 
         val mensagem = "Olá, $cliente.\n\n" +
-                "Identificamos um valor pendente referente à sua compra na AleJoias.\n\n" +
+                "Identificamos um valor pendente referente à sua compra.\n\n" +
                 detalhesCobranca + resumoCompra +
                 "Vencimento: $vencimento\n\n" +
                 "Caso já tenha efetuado o pagamento, por favor desconsidere esta mensagem.\n\n" +
-                "Obrigado!\nAleJoias"
+                "Obrigado!"
 
         val uri = Uri.parse("https://wa.me/?text=" + Uri.encode(mensagem))
         val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -1178,7 +1173,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
 
             val fundo = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
-                background = fundoArredondado(Color.rgb(232, 226, 214), 12f)
+                background = fundoArredondado(Color.rgb(226, 232, 240), 12f)
             }
 
             val largura = ((resources.displayMetrics.widthPixels - dp(80)) * (valor / maxValor)).toInt().coerceAtLeast(dp(12))
@@ -1205,26 +1200,12 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     private fun abrirBackupLocal() {
         telaAtual = "backup"
         content.removeAllViews()
-        statusText.text = "Dados Locais E Sincronização"
+        statusText.text = "Dados E Backup"
 
         content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
         adicionarCardResumo("Cards No SQLite", vendasCache.size.toString())
-        adicionarCardResumo("Alterações Pendentes", localDb.pendingSyncCount().toString())
-
-        content.addView(botaoVoltar("Importar Planilha → SQLite") {
-            confirmarImportacaoPlanilha()
-        })
-
-        content.addView(botaoVoltar("Enviar SQLite → Planilha") {
-            confirmarEnvioPlanilha()
-        })
-
-        content.addView(botaoVoltar("Sincronizar / Mesclar") {
-            confirmarSincronizacao()
-        })
-
         content.addView(botaoVoltar("Exportar CSV Para Excel") {
-            exportarCsvResumo(vendasCache, "alejoias_sqlite.csv")
+            exportarCsvResumo(vendasCache, "vendas_simples_sqlite.csv")
         })
 
         content.addView(botaoVoltar("Fazer Backup Do SQLite") {
@@ -1236,154 +1217,17 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         })
 
         content.addView(texto(
-            "O SQLite é a base principal do aplicativo. Importar substitui o banco local pelos dados da planilha. " +
-                    "Enviar substitui a planilha pela cópia atual do SQLite. Sincronizar mescla registros por ID e, em conflitos, mantém a alteração local.",
+            "Seus dados e fotos ficam neste aparelho. Faça backups regularmente e compartilhe uma cópia para guardá-la em outro local.",
             14f,
             false
         ))
-    }
-
-    private fun sugerirImportacaoInicial() {
-        AlertDialog.Builder(this)
-            .setTitle("Banco SQLite Vazio")
-            .setView(painelMensagem("Este aparelho ainda não possui dados locais. Deseja importar agora todos os clientes, vendas e pagamentos da planilha atual?"))
-            .setPositiveButton("Importar") { _, _ -> importarPlanilhaParaSqlite(false) }
-            .setNegativeButton("Depois", null)
-            .show()
-    }
-
-    private fun confirmarImportacaoPlanilha() {
-        AlertDialog.Builder(this)
-            .setTitle("Importar Da Planilha")
-            .setView(painelMensagem("A importação substituirá os dados atuais do SQLite pelos dados da planilha. Faça um backup local antes se tiver alterações ainda não enviadas."))
-            .setPositiveButton("Importar") { _, _ -> importarPlanilhaParaSqlite(true) }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
-    private fun confirmarEnvioPlanilha() {
-        AlertDialog.Builder(this)
-            .setTitle("Enviar Para Planilha")
-            .setView(painelMensagem("A planilha será substituída pela cópia atual do SQLite, mantendo os mesmos IDs de clientes, vendas e pagamentos. Continuar?"))
-            .setPositiveButton("Enviar") { _, _ -> enviarSqliteParaPlanilha() }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
-    private fun confirmarSincronizacao() {
-        AlertDialog.Builder(this)
-            .setTitle("Sincronizar Dados")
-            .setView(painelMensagem("O app buscará a planilha, mesclará os registros por ID sem sobrescrever alterações locais pendentes e depois enviará a base mesclada de volta à planilha."))
-            .setPositiveButton("Sincronizar") { _, _ -> sincronizarBidirecional() }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
-    private fun importarPlanilhaParaSqlite(mostrarToast: Boolean) {
-        statusText.text = "Importando Planilha Para SQLite..."
-        RetrofitClient.api.getSyncData().enqueue(object : Callback<SyncExportResponse> {
-            override fun onResponse(call: Call<SyncExportResponse>, response: Response<SyncExportResponse>) {
-                val body = response.body()
-                if (!response.isSuccessful || body == null || !body.ok) {
-                    statusText.text = "Falha Ao Importar Da Planilha"
-                    Toast.makeText(this@MainActivity, body?.erro ?: "Erro HTTP ${response.code()}", Toast.LENGTH_LONG).show()
-                    return
-                }
-                try {
-                    localDb.replaceFromRemote(body)
-                    carregarRelatorio { abrirBackupLocal() }
-                    if (mostrarToast) Toast.makeText(this@MainActivity, "Planilha importada para o SQLite.", Toast.LENGTH_SHORT).show()
-                } catch (e: Exception) {
-                    Toast.makeText(this@MainActivity, "Erro ao gravar SQLite: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-
-            override fun onFailure(call: Call<SyncExportResponse>, t: Throwable) {
-                statusText.text = "Erro De Conexão Na Importação"
-                Toast.makeText(this@MainActivity, "Não foi possível importar: ${t.message}", Toast.LENGTH_LONG).show()
-            }
-        })
-    }
-
-    private fun enviarSqliteParaPlanilha() {
-        val local = localDb.exportSyncData()
-        val request = SyncUploadRequest(clientes = local.clientes, vendas = local.vendas, pagamentos = local.pagamentos)
-        statusText.text = "Enviando SQLite Para Planilha..."
-        RetrofitClient.api.uploadSyncData(request).enqueue(object : Callback<SyncUploadResponse> {
-            override fun onResponse(call: Call<SyncUploadResponse>, response: Response<SyncUploadResponse>) {
-                val body = response.body()
-                if (response.isSuccessful && body?.ok == true) {
-                    localDb.markAllSynced()
-                    Toast.makeText(this@MainActivity, "Planilha atualizada com sucesso.", Toast.LENGTH_SHORT).show()
-                    carregarRelatorio { abrirBackupLocal() }
-                } else {
-                    statusText.text = "Falha Ao Enviar Para Planilha"
-                    Toast.makeText(this@MainActivity, body?.erro ?: "Erro HTTP ${response.code()}", Toast.LENGTH_LONG).show()
-                }
-            }
-
-            override fun onFailure(call: Call<SyncUploadResponse>, t: Throwable) {
-                statusText.text = "Erro De Conexão No Envio"
-                Toast.makeText(this@MainActivity, "Não foi possível enviar: ${t.message}", Toast.LENGTH_LONG).show()
-            }
-        })
-    }
-
-    private fun sincronizarBidirecional() {
-        statusText.text = "1/2 Buscando Dados Da Planilha..."
-        RetrofitClient.api.getSyncData().enqueue(object : Callback<SyncExportResponse> {
-            override fun onResponse(call: Call<SyncExportResponse>, response: Response<SyncExportResponse>) {
-                val remoto = response.body()
-                if (!response.isSuccessful || remoto == null || !remoto.ok) {
-                    statusText.text = "Falha Ao Buscar Planilha"
-                    Toast.makeText(this@MainActivity, remoto?.erro ?: "Erro HTTP ${response.code()}", Toast.LENGTH_LONG).show()
-                    return
-                }
-
-                try {
-                    localDb.mergeFromRemote(remoto)
-                    val mesclado = localDb.exportSyncData()
-                    val request = SyncUploadRequest(
-                        clientes = mesclado.clientes,
-                        vendas = mesclado.vendas,
-                        pagamentos = mesclado.pagamentos
-                    )
-                    statusText.text = "2/2 Enviando Base Mesclada..."
-                    RetrofitClient.api.uploadSyncData(request).enqueue(object : Callback<SyncUploadResponse> {
-                        override fun onResponse(call: Call<SyncUploadResponse>, response: Response<SyncUploadResponse>) {
-                            val body = response.body()
-                            if (response.isSuccessful && body?.ok == true) {
-                                localDb.markAllSynced()
-                                Toast.makeText(this@MainActivity, "Sincronização concluída.", Toast.LENGTH_SHORT).show()
-                                carregarRelatorio { abrirBackupLocal() }
-                            } else {
-                                Toast.makeText(this@MainActivity, body?.erro ?: "Falha no envio final", Toast.LENGTH_LONG).show()
-                                carregarRelatorio { abrirBackupLocal() }
-                            }
-                        }
-
-                        override fun onFailure(call: Call<SyncUploadResponse>, t: Throwable) {
-                            Toast.makeText(this@MainActivity, "Mesclado localmente, mas falhou ao enviar: ${t.message}", Toast.LENGTH_LONG).show()
-                            carregarRelatorio { abrirBackupLocal() }
-                        }
-                    })
-                } catch (e: Exception) {
-                    Toast.makeText(this@MainActivity, "Erro ao mesclar: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-
-            override fun onFailure(call: Call<SyncExportResponse>, t: Throwable) {
-                statusText.text = "Erro De Conexão Na Sincronização"
-                Toast.makeText(this@MainActivity, "Não foi possível sincronizar: ${t.message}", Toast.LENGTH_LONG).show()
-            }
-        })
     }
 
     private fun fazerBackupBancoSqlite(): File? {
         return try {
             localDb.close()
             val origem = getDatabasePath(LocalDatabase.DB_NAME)
-            val destino = File(filesDir, "backup_alejoias_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.db")
+            val destino = File(filesDir, "backup_vendas_simples_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.db")
             origem.copyTo(destino, overwrite = true)
             localDb = LocalDatabase(this)
             Toast.makeText(this, "Backup SQLite salvo.", Toast.LENGTH_SHORT).show()
@@ -1455,7 +1299,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     private fun gerarPdfResumo(lista: List<VendaRelatorio>, nomeArquivo: String, mesSelecionado: String) {
         try {
             val file = File(cacheDir, nomeArquivo)
-            gerarPdfGenerico(file, "Resumo AleJoias Vendas", lista, mesSelecionado = mesSelecionado)
+            gerarPdfGenerico(file, "Resumo Vendas Simples", lista, mesSelecionado = mesSelecionado)
             compartilharPdf(file)
         } catch (e: Exception) {
             Toast.makeText(this, "Erro ao gerar PDF.", Toast.LENGTH_LONG).show()
@@ -1515,7 +1359,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             strokeWidth = 1f
         }
         val softLinePaint = Paint().apply {
-            color = Color.rgb(238, 231, 220)
+            color = Color.rgb(226, 232, 240)
             strokeWidth = 1f
         }
 
@@ -1526,7 +1370,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
 
         fun rodape() {
             canvas.drawLine(40f, 805f, 555f, 805f, softLinePaint)
-            canvas.drawText("Documento gerado automaticamente • AleJoias Vendas ERP • Página $pageNumber", 297f, 822f, footerPaint)
+            canvas.drawText("Documento gerado automaticamente • Vendas Simples • Página $pageNumber", 297f, 822f, footerPaint)
         }
 
         fun novaPagina() {
@@ -1602,7 +1446,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             else -> "RELATÓRIO FINANCEIRO"
         }
 
-        canvas.drawText("◇ ALEJOIAS", 297f, y.toFloat(), titlePaint)
+        canvas.drawText("VENDAS SIMPLES", 297f, y.toFloat(), titlePaint)
         y += 24
         canvas.drawText(tipoRelatorio, 297f, y.toFloat(), subtitlePaint)
         y += 26
@@ -1694,7 +1538,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
                 "Cliente: ${venda.nome_cliente ?: "-"}\n" +
                 "Vencimento: ${venda.data_vencimento ?: "-"}\n" +
                 "Valor: ${moeda.format(venda.valor_total)}\n\n" +
-                "Esta ação remove a venda e os pagamentos vinculados do SQLite. A exclusão será refletida na planilha no próximo envio/sync."
+                "Esta ação remove a venda e os pagamentos vinculados do SQLite."
 
         AlertDialog.Builder(this)
             .setTitle("Deletar Card")
@@ -1992,7 +1836,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             val canvas = Canvas(bitmap)
             content.draw(canvas)
 
-            val file = File(cacheDir, "resumo_alejoias.png")
+            val file = File(cacheDir, "resumo_vendas_simples.png")
             val output = FileOutputStream(file)
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
             output.flush()
@@ -2071,8 +1915,8 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
 private fun criarCanalNotificacoes() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val canal = NotificationChannel(
-                "alejoias_vencimentos",
-                "Vencimentos AleJoias",
+                "vendas_simples_vencimentos",
+                "Vencimentos Vendas Simples",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             canal.description = "Avisos de vendas vencidas ou próximas do vencimento"
@@ -2103,9 +1947,9 @@ private fun criarCanalNotificacoes() {
             else -> "${vencendoHoje.size} venda(s) vencem hoje."
         }
 
-        val notification = NotificationCompat.Builder(this, "alejoias_vencimentos")
+        val notification = NotificationCompat.Builder(this, "vendas_simples_vencimentos")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("AleJoias Vendas")
+            .setContentTitle("Vendas Simples")
             .setContentText(texto)
             .setStyle(NotificationCompat.BigTextStyle().bigText(texto))
             .setContentIntent(pendingIntent)
@@ -2122,24 +1966,11 @@ private fun criarCanalNotificacoes() {
         try {
             statusText.text = "Carregando Dados Do SQLite..."
             vendasCache = localDb.getRelatorio()
-            statusText.text = "SQLite Local | ${vendasCache.size} Cards | ${localDb.pendingSyncCount()} Alteração(ões) Para Sincronizar"
+            statusText.text = "Dados locais | ${vendasCache.size} cards"
             notificarVencimentos()
             aoFinalizar?.invoke()
         } catch (e: Exception) {
             statusText.text = "Erro No Banco Local: ${e.message}"
-        }
-    }
-
-    private fun respostaPadrao(msgSucesso: String): Callback<Map<String, Any>> {
-        return object : Callback<Map<String, Any>> {
-            override fun onResponse(call: Call<Map<String, Any>>, response: Response<Map<String, Any>>) {
-                Toast.makeText(this@MainActivity, msgSucesso, Toast.LENGTH_SHORT).show()
-                carregarRelatorio { abrirListaVendas() }
-            }
-
-            override fun onFailure(call: Call<Map<String, Any>>, t: Throwable) {
-                Toast.makeText(this@MainActivity, "Erro: ${t.message}", Toast.LENGTH_LONG).show()
-            }
         }
     }
 

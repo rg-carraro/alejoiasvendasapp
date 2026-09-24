@@ -1,3 +1,6 @@
+> Documento histórico da base AleJoias. Não descreve o estado da branch comercial.
+ > Para Vendas Simples, consulte README.md e docs/COMERCIAL.md.
+
 # Sincronização das cópias e do GitHub
 
 Em 13/09/2026, a cópia `C:\Users\rgcar\git\alejoiasvendasapp` foi comparada com

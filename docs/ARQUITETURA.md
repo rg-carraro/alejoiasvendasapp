@@ -1,36 +1,14 @@
-# Arquitetura
+# Arquitetura comercial
 
-## Estado atual validado
+Vendas Simples usa SQLiteOpenHelper, sem Room e sem backend remoto.
 
-O aplicativo AleJoias Vendas usa SQLite nativo, por meio de `SQLiteOpenHelper`, como armazenamento principal local e mantém integração com o backend anterior em Google Apps Script + Google Planilhas.
+Android UI → regras locais → SQLite → PDF / CSV / backup / compartilhamento.
 
-```text
-Android
-  |
-  v
-SQLite / SQLiteOpenHelper (fonte principal)
-  |
-  +--> telas, vendas, pagamentos, relatórios, PDFs
-  |
-  v
-Sincronização
-  |
-  v
-Google Apps Script
-  |
-  v
-Google Planilhas
-```
+MainActivity.kt mantém telas e fluxos. LocalDatabase.kt mantém persistência,
+transações, fotos e IDs da base v2. Models.kt contém os dados das operações locais.
+Não há Retrofit, endpoint Apps Script ou permissão INTERNET no aplicativo.
+WhatsApp e compartilhamentos são abertos por Intent em outro aplicativo.
 
-## Objetivos da arquitetura
-
-- resposta rápida no telefone;
-- operação offline;
-- independência da latência do Apps Script;
-- manter a planilha disponível;
-- facilitar exportação/backup;
-- preservar IDs entre os dois bancos.
-
-## Regra
-
-Não transformar novamente a planilha em fonte obrigatória para o funcionamento normal do app sem uma decisão explícita do usuário.
+O namespace interno com.example.controlevendas foi preservado; applicationId
+com.vendassimples.app e banco vendas_simples.db isolam o novo app do AleJoias.
+Leia docs/COMERCIAL.md para as decisões e limites desta primeira versão.

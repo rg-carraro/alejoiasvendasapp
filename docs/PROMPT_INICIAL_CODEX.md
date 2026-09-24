@@ -1,13 +1,6 @@
-# Prompt sugerido para a primeira sessão no Codex
+# Contexto da branch comercial
 
-Leia primeiro `AGENTS.md` e todos os arquivos da pasta `docs/`.
-
-Este repositório é a base estável AleJoias Vendas SQLite Sync v2. Antes de modificar qualquer arquivo, analise a implementação existente e preserve todas as funcionalidades atuais.
-
-Para cada solicitação:
-1. identifique os arquivos realmente afetados;
-2. explique resumidamente o impacto;
-3. faça alterações pontuais;
-4. não refatore áreas não relacionadas;
-5. preserve schema, IDs, SQLite e sincronização com Google Planilhas;
-6. verifique riscos de regressão em vendas, pagamentos, relatórios, PDFs, CSV e sync.
+Leia AGENTS.md, README.md e docs/COMERCIAL.md. Trabalhe em comercial e preserve
+as operações locais. A integração de planilha foi removida por solicitação do
+usuário. Documente em CHANGELOG_COMERCIAL.md, valide e publique em comercial.
+O AleJoias continua em master e na tag alejoias-v2-marco-2026-09-24.

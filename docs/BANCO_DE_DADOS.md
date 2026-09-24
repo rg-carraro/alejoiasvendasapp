@@ -4,17 +4,17 @@
 
 O banco local é criado pelo aplicativo no armazenamento privado do Android. O arquivo usado na versão de referência é:
 
-`alejoias_vendas.db`
+`vendas_simples.db`
 
 Caminho típico no aparelho:
 
-`/data/user/0/<package>/databases/alejoias_vendas.db`
+`/data/user/0/<package>/databases/vendas_simples.db`
 
 ou:
 
-`/data/data/<package>/databases/alejoias_vendas.db`
+`/data/data/<package>/databases/vendas_simples.db`
 
-## Estrutura lógica preservada da planilha
+## Estrutura lógica local
 
 ### CLIENTES
 - `id_cliente`
@@ -44,16 +44,14 @@ ou:
 
 A migração de `DB_VERSION 1` para `2` cria somente esta tabela e seu índice,
 sem alterar CLIENTES, VENDAS, PAGAMENTOS ou os IDs compartilhados. O backup
-SQLite contém as fotos; a planilha não armazena imagens.
+SQLite contém as fotos.
 
 ## Regra de compatibilidade
 
-Os mesmos identificadores devem ser preservados no SQLite e na planilha para permitir sincronização e evitar duplicidades.
+Preservar os identificadores e vínculos locais. Tabelas SYNC_DIRTY e SYNC_DELETIONS são metadados legados sem consumidor remoto, mantidos para preservar o schema v2.
 
 Mudanças de schema exigem atenção a:
 - incremento de `DB_VERSION` e implementação segura de `onUpgrade` no `SQLiteOpenHelper`;
 - importação de dados existentes;
-- Apps Script;
-- sincronização;
 - relatórios;
 - PDFs e CSVs.

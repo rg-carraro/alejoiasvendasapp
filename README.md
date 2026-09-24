@@ -1,109 +1,39 @@
-# AleJoias Vendas
+# Vendas Simples
 
-Aplicativo Android para controle de vendas da AleJoias. A base oficial deste
-repositório é a versão **2.0 SQLite Sync**, validada em uso real.
+Aplicativo Android para vendas de produtos e serviços, com dados em SQLite
+local e identidade azul/cinza. Esta é a branch **comercial**; o AleJoias com
+Google Planilhas permanece em **master**, preservado pela tag
+`alejoias-v2-marco-2026-09-24`.
 
-## Interface sincronizada
+## Funcionalidades
 
-A interface atual usa a paleta verde/dourado da cópia GitHub, com etiquetas de
-status nos cards e seleção de mês no dashboard financeiro. O armazenamento
-permanece em SQLite e a sincronização com Google Planilhas é opcional.
-Consulte [docs/COMPARACAO_COPIAS.md](docs/COMPARACAO_COPIAS.md) para o histórico
-da conciliação entre as duas pastas.
+- Venda à vista ou parcelada, edição, exclusão e clientes.
+- Pagamentos parciais, correção de pagamento e cobrança via WhatsApp com
+  identificação da parcela, valor pago e total da compra quando disponível.
+- Fotos da galeria/câmera, miniatura e acesso a todas as fotos.
+- Busca, filtros, painel financeiro e relatórios por período, mês e cliente.
+- PDFs com fotos; PDF financeiro segue o mês selecionado no painel.
+- Exportação CSV, criação e compartilhamento do backup SQLite com fotos.
+- Indicadores clicáveis e notificações de vencimento.
 
-O menu inicial mantém o layout simples com os atalhos principais e o botão de opções.
-Em 24/09/2026, a última mudança visual foi revertida por preferência do usuário,
-preservando vendas, pagamentos, parcelamento e sincronização.
-A imagem grande da marca foi removida do topo; título, cores e ícone mantêm
-a identidade AleJoias e deixam mais espaço para o conteúdo.
+O menu ⋮ no cabeçalho abre **Dados e backup**. Não há integração com Google
+Planilhas, login remoto, importação online nem sincronização. Compartilhar PDF,
+CSV, backup e abrir WhatsApp utiliza aplicativos externos escolhidos pelo usuário.
 
-## Fotos da venda
+## Instalação e build
 
-Uma nova venda pode incluir fotos do produto, mas elas são opcionais. É possível escolher várias
-imagens da galeria ou tirar fotos com a câmera. A primeira foto aparece no
-card da venda, na pesquisa da lista e no histórico do cliente; todas aparecem nos
-detalhes de cada parcela, no PDF individual do card e nos relatórios PDF.
-Toque na miniatura ou em **Ver fotos** para acessar todas as fotos;
-deslize para os lados nos detalhes e toque em uma foto para ampliar.
-As fotos ficam no SQLite local, inclusive no backup do banco. A
-sincronização com Google Planilhas continua enviando apenas os dados de vendas,
-clientes e pagamentos; fotos não são transferidas entre aparelhos.
-
-## Navegação
-
-O menu **Financeiro / Relatórios** reúne o painel mensal e botões uniformes
-para relatórios por período, mês e cliente e para gerar o PDF financeiro. A pesquisa da lista de vendas
-também encontra cliente, descrição, datas e valor; a tela separada de busca
-global foi removida. **Dados e sincronização** fica no botão de opções
-`⋮` do cabeçalho AleJoias. Os indicadores do painel e dos relatórios mensal e por período abrem
-a lista de cards correspondente. A exportação Excel/CSV geral saiu dessa tela;
-o CSV permanece no relatório mensal e em Dados.
-O PDF financeiro acompanha o mês selecionado e os mesmos dados dos indicadores
-do painel, inclusive quando não há vendas nesse mês.
-
-## Arquitetura atual
-
-- SQLite local (`alejoias_vendas.db`) como fonte operacional principal;
-- acesso ao banco com `SQLiteOpenHelper` em `LocalDatabase.kt`;
-- funcionamento local sem internet;
-- sincronização opcional com Google Apps Script e Google Planilhas;
-- IDs compartilhados preservados: `id_cliente`, `id_venda`, `id_pagamento` e
-  `id_venda_pai`.
-
-Detalhes: [README_SQLITE_SYNC.md](README_SQLITE_SYNC.md) e
-[docs/ARQUITETURA.md](docs/ARQUITETURA.md).
-
-## Requisitos de desenvolvimento
-
-- Android Studio com JDK 17 ou superior (o projeto está validado com o JBR 21);
-- Android SDK 35;
-- acesso à internet no primeiro build para baixar o Gradle e as dependências.
-
-Versões principais:
-
-- Gradle Wrapper 8.7;
-- Android Gradle Plugin 8.5.2;
-- Kotlin 1.9.24;
-- `minSdk 23`, `targetSdk 35` e `compileSdk 35`.
-
-## Compilação
-
-No Android Studio, abra a raiz do projeto e use **Build > Build APK(s)**.
-
-Pelo terminal no Windows, com um JDK configurado:
+Identificador próprio: `com.vendassimples.app`. Pode coexistir com AleJoias e
+começa com banco separado e vazio; não copia os dados do aplicativo original.
+Java do Android Studio e SDK Android configurados em local.properties:
 
 ```powershell
 .\gradlew.bat assembleDebug
 ```
 
-O APK debug será criado em `app/build/outputs/apk/debug/app-debug.apk`.
+APK: `app/build/outputs/apk/debug/app-debug.apk`.
+Esta primeira versão comercial é para testes; não é uma publicação em loja.
+O fluxo herdado cria e compartilha backups; ainda não há restauração de backup
+pela interface. Guarde uma cópia fora do aparelho usando Compartilhar backup.
 
-O AGP 8.5.2 pode emitir um aviso por ter sido testado oficialmente até o
-`compileSdk 34`. A configuração com SDK 35 compila nesta base estável; versões
-não devem ser atualizadas sem um teste completo de regressão.
-
-## Configuração do backend
-
-A URL do Apps Script está definida em
-`app/src/main/java/com/example/controlevendas/RetrofitClient.kt`. Se uma nova
-implantação gerar outra URL, atualize `BASE_URL` e faça o checklist de regressão.
-
-O backend de referência está em `AppsScript_Codigo.gs`. Ele mantém as ações
-anteriores e inclui `sync_export` e `sync_upload`.
-
-## Segurança e versionamento
-
-- Não versione `local.properties`, builds, caches, APKs, chaves ou arquivos de
-  assinatura; o `.gitignore` da raiz já cobre esses itens.
-- Nunca grave senhas, tokens ou chaves privadas no código.
-- A URL publicada do Apps Script identifica o endpoint, mas não é um mecanismo
-  de autenticação. Restrinja o acesso na implantação do Google e prefira um
-  repositório remoto privado.
-- Antes de operações destrutivas de sincronização, mantenha backup da planilha e
-  do banco SQLite.
-
-## Política de alterações
-
-Leia [AGENTS.md](AGENTS.md) antes de modificar o projeto. Toda mudança deve ser
-pontual, preservar o schema e os IDs e ser validada conforme
-[docs/CHECKLIST_TESTES.md](docs/CHECKLIST_TESTES.md).
+Veja [escopo comercial](docs/COMERCIAL.md), [funcionalidades](docs/FUNCIONALIDADES.md),
+[checklist](docs/CHECKLIST_TESTES.md) e [changelog](CHANGELOG_COMERCIAL.md).

@@ -38,7 +38,7 @@ Após mudanças, testar pelo menos:
 - [ ] busca combinada com filtros de data e a receber;
 - [ ] menu Financeiro / Relatórios mostra painel mensal e botões uniformes
       para período, mensal, cliente e PDF financeiro;
-- [ ] botão `⋮` abre Dados e sincronização;
+- [ ] botão `⋮` abre Dados e backup;
 - [ ] relatório por período e envio de imagem por WhatsApp;
 - [ ] resumo financeiro;
 - [ ] resumo mensal;
@@ -51,7 +51,7 @@ Após mudanças, testar pelo menos:
 - [ ] telas sem imagem de marca-d'água no topo, mantendo título, cores e ícone;
 - [ ] Ver fotos fica ao lado da miniatura e abre todas as imagens, inclusive
       em telefone estreito e com fonte ampliada;
-- [ ] três pontinhos no cabeçalho abrem Dados e sincronização;
+- [ ] três pontinhos no cabeçalho abrem Dados e backup;
 - [ ] cabeçalho não sobrepõe câmera/barra de status em retrato ou paisagem;
       verificar também teclado aberto e navegação por gestos ou três botões;
 - [ ] tocar em Vendido no mês lista os cards e soma o valor vendido exibido;
@@ -61,7 +61,12 @@ Após mudanças, testar pelo menos:
 - [ ] PDF;
 - [ ] CSV;
 - [ ] backup;
-- [ ] Planilha → SQLite;
-- [ ] SQLite → Planilha;
-- [ ] sync repetido sem duplicação;
 - [ ] funcionamento offline.
+
+## Primeira versão comercial
+
+- [ ] instalar ao lado do AleJoias sem substituí-lo; bancos independentes;
+- [ ] primeira abertura sem convite de importação e primeira venda offline;
+- [ ] marca Vendas Simples azul/cinza e ícone próprio no launcher;
+- [ ] ausência de menu de planilha/sync; PDF, cobrança e notificações genéricos;
+- [ ] criar e compartilhar backup .db com fotos; exportar CSV.

@@ -1,11 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:theme="@style/AppTheme"
-        android:label="AleJoias Vendas"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="Vendas Simples"
+        android:icon="@drawable/ic_vendas_simples"
+        android:roundIcon="@drawable/ic_vendas_simples"
         android:allowBackup="true"
         android:supportsRtl="true">
         <activity
