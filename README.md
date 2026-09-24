@@ -11,11 +11,9 @@ permanece em SQLite e a sincronização com Google Planilhas é opcional.
 Consulte [docs/COMPARACAO_COPIAS.md](docs/COMPARACAO_COPIAS.md) para o histórico
 da conciliação entre as duas pastas.
 
-O menu inicial também usa uma hierarquia de painel: saudação, resumo rápido,
-ações principais e indicadores operacionais. Essa organização segue o padrão de
-leitura do MVP de gestão clínica, mantendo a identidade AleJoias em verde,
-dourado, creme e sua marca existente. Nenhuma regra de vendas, pagamento,
-parcelamento ou sincronização foi alterada.
+O menu inicial mantém o layout simples com os atalhos principais e o botão de opções.
+Em 24/09/2026, a última mudança visual foi revertida por preferência do usuário,
+preservando vendas, pagamentos, parcelamento e sincronização.
 
 ## Fotos da venda
 

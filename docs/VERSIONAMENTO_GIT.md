@@ -8,7 +8,7 @@ A tag `sqlite-sync-v2-stable` identifica a base SQLite Sync v2 validada. Mudanç
 2. Revise `git diff`, valide com `gradlew.bat assembleDebug` e execute o checklist aplicável em `docs/CHECKLIST_TESTES.md`.
 3. Faça commits descritivos sem APKs, caches, configurações locais ou credenciais.
 4. Antes de sincronizar a cópia do Android Studio em `C:\Users\rgcar\git\alejoiasvendasapp`, confira sua árvore de trabalho. Prefira avanço rápido sem descartar alterações locais.
-5. Quando o usuário pedir sync com GitHub, confira o remoto e publique os commits. Informe quais testes ainda dependem do aparelho.
+5. Toda alteração concluída deve ser documentada e publicada no GitHub, conforme autorização permanente do usuário em 24/09/2026. Atualize o changelog e a documentação afetada, confira o remoto e publique os commits sem pedir nova confirmação. Informe impedimentos e quais testes ainda dependem do aparelho.
 
 ## Remoto
 
@@ -17,7 +17,7 @@ O `origin` configurado é `https://github.com/rg-carraro/alejoiasvendasapp.git` 
 ```powershell
 git remote -v
 git ls-remote --heads origin
-git push origin main:master
+git push origin HEAD:master
 ```
 
 O repositório é público; a URL do Apps Script existente no aplicativo não autentica o backend. Não publique segredos novos, arquivos de assinatura ou dados locais.

@@ -21,26 +21,23 @@ A marca existente, `watermark_alejoias.png`, o ícone e os recursos Android deve
 continuar sendo usados. Uma futura extração das cores para `AppTheme` ou um
 objeto de estilo é aceitável, mas deve ser mecânica e visualmente equivalente.
 
-## Estrutura visual aplicada
+## Estrutura visual anterior restaurada (24/09/2026)
 
-O menu inicial segue esta sequência:
+O menu inicial voltou ao layout anterior ao commit `4dccf0e`, com o botão de
+opções e os atalhos Vendas, Nova venda, Financeiro / Relatórios e Clientes.
+Foram removidos o painel de boas-vindas, os indicadores extras do menu e os
+cabeçalhos de seção adicionados na última mudança visual. As telas voltaram
+aos títulos e mensagens simples anteriores, mantendo os indicadores clicáveis
+nos relatórios e todas as funcionalidades existentes.
 
-```text
-marca e cabeçalho
-status do SQLite
-painel de saudação e resumo
-Ações rápidas
-  Vendas | Nova venda
-  Financeiro | Clientes
-Acompanhe sua operação
-  recebido | a receber | vencidos | cards totais
-nota sobre SQLite e sincronização
-```
+## Espaçamento dos botões (24/09/2026)
 
-O padrão prioriza uma ação por card, títulos curtos, subtítulo explicativo,
-espaçamento generoso, cantos arredondados e estados financeiros legíveis. Os
-cards de vendas continuam mostrando etiquetas textuais (`QUITADO`, `VENCIDO`,
-`PAGO PARCIALMENTE`, `EM ABERTO`); cor nunca é o único indicador.
+Os botões de ação e navegação criados por `botaoVoltar` usam `margemCard()`
+por padrão: 8 dp acima e abaixo, com 16 dp entre botões consecutivos, seguindo
+os botões de relatórios do Financeiro. O padrão também vale para Nova venda
+(galeria, câmera e remoção de fotos), pesquisa, relatórios e dados/sincronização.
+As margens explícitas existentes no Financeiro substituem as margens padrão,
+sem somar espaçamento adicional.
 
 ## Mapa de implementação
 
@@ -94,9 +91,9 @@ Após uma mudança de UI:
 
 ## Estado da aplicação deste padrão
 
-A primeira aplicação foi concluída em 22/09/2026. A hierarquia de painel e
-seções está presente no menu, vendas, financeiro, detalhamentos, relatórios,
-histórico de cliente e dados/sincronização. Os estados vazios dessas áreas usam
+Registro histórico (revertido em 24/09/2026 por preferência do usuário): a primeira aplicação foi concluída em 22/09/2026. A hierarquia de painel e
+seções estava presente no menu, vendas, financeiro, detalhamentos, relatórios,
+histórico de cliente e dados/sincronização. Os estados vazios dessas áreas usavam
 mensagens orientativas. O build debug foi validado depois da alteração.
 
 ## Como repetir o padrão do MVP clínico

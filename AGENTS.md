@@ -100,3 +100,12 @@ Ao receber um pedido:
 - manter o schema compatível, salvo autorização explícita.
 
 Não alterar o backend Apps Script desnecessariamente.
+
+## Documentação e publicação
+
+Por orientação do usuário em 24/09/2026, toda alteração concluída deve ser
+documentada e publicada no GitHub. Atualizar o changelog e a documentação
+afetada, validar a mudança, revisar o diff e fazer commit e push seguindo
+`docs/VERSIONAMENTO_GIT.md`. Essa rotina já está autorizada, sem necessidade
+de pedir nova confirmação a cada alteração. Informar qualquer impedimento
+de publicação e os testes que ainda dependem do aparelho.

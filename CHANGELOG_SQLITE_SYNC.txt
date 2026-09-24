@@ -39,3 +39,15 @@ OBSERVAÇÃO DE BUILD
   preservados; nenhuma regra SQLite, pagamento, ID ou sincronização foi alterada.
 - `assembleDebug` validado após a alteração. Permanecem somente os avisos já
   conhecidos de `compileSdk 35`, `onBackPressed` e parâmetro legado não utilizado.
+
+24/09/2026 — Retorno à interface anterior
+- Restaurado MainActivity.kt exatamente como antes do commit visual 4dccf0e.
+- Removidos os painéis e cabeçalhos extras; mantidas as funcionalidades anteriores.
+- SQLite, IDs, pagamentos, fotos e sincronização sem mudanças.
+- assembleDebug concluído com sucesso; apenas avisos existentes. Teste no telefone pendente.
+
+24/09/2026 — Espaçamento uniforme dos botões
+- Aplicado o padrão do Financeiro aos botões de ação e navegação: margens verticais de 8 dp.
+- Inclui Nova venda, galeria, câmera, remover fotos, pesquisa, relatórios e sincronização.
+- Mantidas as ações e regras existentes; assembleDebug validado com sucesso.
+- Conferência visual no telefone pendente.
