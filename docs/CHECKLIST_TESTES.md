@@ -27,6 +27,12 @@ Após mudanças, testar pelo menos:
 - [ ] data de pagamento;
 - [ ] correção de valor pago;
 - [ ] cobrança WhatsApp;
+- [ ] cobrança identifica parcela (ex.: 2 de 3), valor pago e saldo do card;
+- [ ] total da compra e total pago somam apenas parcelas do mesmo id_venda_pai,
+      inclusive parcelas já quitadas e fora do filtro da lista;
+- [ ] venda à vista mostra valor, pago e saldo; venda quitada não abre cobrança;
+- [ ] venda sem id_venda_pai, com parcelas ausentes ou numeração inconsistente
+      não apresenta total da compra estimado; parcela desconhecida é sinalizada;
 - [ ] filtros;
 - [ ] pesquisa por cliente, descrição, datas e valor na lista de vendas;
 - [ ] busca combinada com filtros de data e a receber;

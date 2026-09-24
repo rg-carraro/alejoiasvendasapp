@@ -1094,9 +1094,36 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             return
         }
 
+        val quantidadeParcelas = (venda.parcelas ?: 1).coerceAtLeast(1)
+        val parcelada = quantidadeParcelas > 1
+        val detalhesCobranca = if (parcelada) {
+            val parcela = venda.parcela_atual?.takeIf { it in 1..quantidadeParcelas }
+            val identificacao = parcela?.let { "Parcela em cobrança: $it de $quantidadeParcelas\n" }
+                ?: "Parcela em cobrança: número não informado\n"
+            "Compra parcelada em $quantidadeParcelas vezes\n" + identificacao +
+                "Valor desta parcela: ${moeda.format(venda.valor_total)}\n" +
+                "Já pago nesta parcela: ${moeda.format(venda.total_pago)}\n" +
+                "Valor em aberto desta parcela: ${moeda.format(saldo)}\n"
+        } else {
+            "Compra à vista (parcela única)\n" +
+                "Valor da compra: ${moeda.format(venda.valor_total)}\n" +
+                "Já pago: ${moeda.format(venda.total_pago)}\n" +
+                "Valor em aberto: ${moeda.format(saldo)}\n"
+        }
+        val parcelasDaCompra = if (parcelada && !venda.id_venda_pai.isNullOrBlank()) {
+            vendasCache.filter { it.id_venda_pai == venda.id_venda_pai }
+        } else emptyList()
+        val compraCompleta = parcelasDaCompra.size == quantidadeParcelas &&
+            parcelasDaCompra.all { it.parcelas == quantidadeParcelas } &&
+            parcelasDaCompra.mapNotNull { it.parcela_atual }.toSet() == (1..quantidadeParcelas).toSet()
+        val resumoCompra = if (parcelada && compraCompleta) {
+            "\nTotal da compra: ${moeda.format(parcelasDaCompra.sumOf { it.valor_total })}\n" +
+                "Já pago no total da compra: ${moeda.format(parcelasDaCompra.sumOf { it.total_pago })}\n"
+        } else ""
+
         val mensagem = "Olá, $cliente.\n\n" +
                 "Identificamos um valor pendente referente à sua compra na AleJoias.\n\n" +
-                "Valor em aberto: ${moeda.format(saldo)}\n" +
+                detalhesCobranca + resumoCompra +
                 "Vencimento: $vencimento\n\n" +
                 "Caso já tenha efetuado o pagamento, por favor desconsidere esta mensagem.\n\n" +
                 "Obrigado!\nAleJoias"

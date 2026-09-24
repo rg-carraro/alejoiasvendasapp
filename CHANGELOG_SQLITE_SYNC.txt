@@ -65,3 +65,12 @@ OBSERVAÇÃO DE BUILD
 - SQLite, schema, fotos persistidas, IDs e sincronização não foram alterados.
 - assembleDebug validado com sucesso; diff revisado. Sem aparelho/emulador
   conectado: conferência visual, fotos múltiplas e PDF no telefone pendentes.
+
+24/09/2026 — Cobrança WhatsApp com contexto da parcela
+- Mensagem identifica compra à vista ou parcelada e parcela em cobrança.
+- Informa valor, pagamento acumulado e saldo do card; mantém vencimento.
+- Total da compra e total pago são somados pelo id_venda_pai somente quando
+  todas as parcelas estão presentes, com numeração e quantidade consistentes.
+- Sem vínculo completo, não estima totais; parcela desconhecida é informada.
+- Mantidos bloqueio de cobrança quitada, seleção manual no WhatsApp e dados SQLite.
+- assembleDebug e revisão do diff OK. Conferência no WhatsApp do telefone pendente.

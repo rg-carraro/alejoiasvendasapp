@@ -23,6 +23,12 @@ A versão estável possui, entre outras, as seguintes capacidades que devem ser 
 - pesquisa;
 - cobrança via WhatsApp.
 
+A cobrança por WhatsApp informa se a compra é à vista ou parcelada, qual
+parcela está sendo cobrada, seu valor, quanto já foi pago e o saldo pendente.
+Para compras parceladas, também informa o total da compra e o total pago quando
+todas as parcelas estão disponíveis e identificadas pelo mesmo `id_venda_pai`.
+Sem vínculo completo, mantém apenas os valores do card, sem estimar o total.
+
 ## Fotos dos produtos
 - fotos opcionais para novas vendas;
 - seleção de uma ou várias fotos da galeria;
