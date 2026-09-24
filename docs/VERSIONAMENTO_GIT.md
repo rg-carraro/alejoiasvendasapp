@@ -24,4 +24,9 @@ O repositório é público; a URL do Apps Script existente no aplicativo não au
 
 ## Recuperação
 
+O marco de 24/09/2026 está na tag `alejoias-v2-marco-2026-09-24`.
+Consulte `docs/MARCO_2026-09-24.md`. A branch `master` mantém AleJoias;
+`comercial` é a linha independente Vendas Simples, sem backend de planilha.
+Confira a branch antes do push e nunca publique a versão comercial em master.
+
 Use `git show sqlite-sync-v2-stable` para consultar a base estável. Não use `reset --hard` nem limpeza forçada sem conferir alvo e backup.

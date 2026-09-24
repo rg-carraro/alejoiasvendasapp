@@ -81,3 +81,9 @@ OBSERVAÇÃO DE BUILD
 - Margem superior de 16 dp e aplicação de insets das barras, câmera e teclado.
 - Sem alterações no SQLite, pagamentos, PDFs ou sincronização.
 - assembleDebug OK; conferência no telefone (câmera, rotação e fonte ampliada) pendente.
+
+24/09/2026 — Marco de evolução AleJoias
+- Estado atual documentado em docs/MARCO_2026-09-24.md e preservado na tag
+  alejoias-v2-marco-2026-09-24.
+- Autorizada linha independente comercial: Vendas Simples, azul/cinza, local,
+  sem integração com Google Planilhas. AleJoias permanece na master.
