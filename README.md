@@ -14,6 +14,8 @@ da conciliação entre as duas pastas.
 O menu inicial mantém o layout simples com os atalhos principais e o botão de opções.
 Em 24/09/2026, a última mudança visual foi revertida por preferência do usuário,
 preservando vendas, pagamentos, parcelamento e sincronização.
+A imagem grande da marca foi removida do topo; título, cores e ícone mantêm
+a identidade AleJoias e deixam mais espaço para o conteúdo.
 
 ## Fotos da venda
 
@@ -21,6 +23,8 @@ Uma nova venda pode incluir fotos do produto, mas elas são opcionais. É possí
 imagens da galeria ou tirar fotos com a câmera. A primeira foto aparece no
 card da venda, na pesquisa da lista e no histórico do cliente; todas aparecem nos
 detalhes de cada parcela, no PDF individual do card e nos relatórios PDF.
+Toque na miniatura ou em **Ver fotos da venda** para acessar todas as fotos;
+deslize para os lados nos detalhes e toque em uma foto para ampliar.
 As fotos ficam no SQLite local, inclusive no backup do banco. A
 sincronização com Google Planilhas continua enviando apenas os dados de vendas,
 clientes e pagamentos; fotos não são transferidas entre aparelhos.
@@ -34,6 +38,8 @@ global foi removida. **Dados e sincronização** fica no botão de opções
 `⋮` do menu principal. Os indicadores do painel e dos relatórios mensal e por período abrem
 a lista de cards correspondente. A exportação Excel/CSV geral saiu dessa tela;
 o CSV permanece no relatório mensal e em Dados.
+O PDF financeiro acompanha o mês selecionado e os mesmos dados dos indicadores
+do painel, inclusive quando não há vendas nesse mês.
 
 ## Arquitetura atual
 

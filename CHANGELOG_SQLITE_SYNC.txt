@@ -51,3 +51,17 @@ OBSERVAÇÃO DE BUILD
 - Inclui Nova venda, galeria, câmera, remover fotos, pesquisa, relatórios e sincronização.
 - Mantidas as ações e regras existentes; assembleDebug validado com sucesso.
 - Conferência visual no telefone pendente.
+
+24/09/2026 — Fotos acessíveis, PDF financeiro filtrado e marca discreta
+- Miniatura e botão Ver fotos da venda abrem os detalhes com todas as fotos,
+  contagem, orientação para deslizar e ampliação individual. Vale para lista,
+  pesquisa, detalhamentos financeiros e histórico do cliente.
+- PDF financeiro usa a mesma lista do mês selecionado no painel, em vez de
+  todas as vendas; inclui clientes em débito para comparação dos indicadores.
+- PDFs financeiro e mensal recebem a referência explicitamente, inclusive em
+  mês vazio. O período do PDF não herda filtros de outras telas.
+- Removida a imagem grande do topo; identidade preservada no título, cores,
+  ícone e cabeçalho dos PDFs. Recurso original mantido no projeto.
+- SQLite, schema, fotos persistidas, IDs e sincronização não foram alterados.
+- assembleDebug validado com sucesso; diff revisado. Sem aparelho/emulador
+  conectado: conferência visual, fotos múltiplas e PDF no telefone pendentes.

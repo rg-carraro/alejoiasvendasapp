@@ -17,8 +17,10 @@ Os valores visuais atuais ficam centralizados no `MainActivity.kt`:
 | Texto | `#27312E` | conteúdo principal |
 | Borda | `#DED3C2` | separação discreta |
 
-A marca existente, `watermark_alejoias.png`, o ícone e os recursos Android devem
-continuar sendo usados. Uma futura extração das cores para `AppTheme` ou um
+A imagem `watermark_alejoias.png` deixou de aparecer no topo das telas em
+24/09/2026 para liberar espaço e reduzir ruído visual. O arquivo foi preservado.
+A identidade permanece no título AleJoias Vendas, na paleta, no ícone e no
+cabeçalho dos PDFs. Uma futura extração das cores para `AppTheme` ou um
 objeto de estilo é aceitável, mas deve ser mecânica e visualmente equivalente.
 
 ## Estrutura visual anterior restaurada (24/09/2026)

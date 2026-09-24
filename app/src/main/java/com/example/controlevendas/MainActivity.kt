@@ -150,13 +150,6 @@ class MainActivity : AppCompatActivity() {
             setBackgroundColor(corFundo)
         }
 
-        val watermark = ImageView(this).apply {
-            setImageResource(R.drawable.watermark_alejoias)
-            alpha = 0.38f
-            scaleType = ImageView.ScaleType.FIT_CENTER
-            contentDescription = "Marca AleJoias"
-        }
-
         val mainContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(8), dp(16), dp(16))
@@ -209,16 +202,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         scroll.addView(content)
-
-        mainContainer.addView(
-            watermark,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(96)
-            ).apply {
-                setMargins(dp(24), 0, dp(24), dp(6))
-            }
-        )
 
         mainContainer.addView(
             header,
@@ -475,11 +458,12 @@ class MainActivity : AppCompatActivity() {
         card.addView(ImageView(this).apply {
             setImageBitmap(miniatura)
             scaleType = ImageView.ScaleType.CENTER_CROP
-            contentDescription = "Foto do produto; toque para ampliar"
-            setOnClickListener { mostrarFoto(bytes) }
+            contentDescription = "Foto do produto; toque para ver todas as fotos da venda"
+            setOnClickListener { abrirDetalhesVenda(venda) }
         }, LinearLayout.LayoutParams(dp(104), dp(104)).apply {
             setMargins(0, dp(8), 0, dp(5))
         })
+        card.addView(botaoVoltar("Ver fotos da venda") { abrirDetalhesVenda(venda) })
     }
 
     private fun estaVencida(venda: VendaRelatorio): Boolean {
@@ -575,13 +559,17 @@ class MainActivity : AppCompatActivity() {
 
         val fotos = localDb.getFotosVenda(venda.id_venda_pai)
         if (fotos.isNotEmpty()) {
-            painel.addView(texto("Fotos do produto:", 14f, true))
+            painel.addView(texto("Fotos do produto (${fotos.size}) — toque para ampliar:", 14f, true))
+            if (fotos.size > 1) {
+                painel.addView(texto("Deslize para os lados para ver todas as fotos.", 13f, false))
+            }
             val faixa = HorizontalScrollView(this)
             val miniaturas = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-            fotos.forEach { bytes ->
+            fotos.forEachIndexed { indice, bytes ->
                 miniaturas.addView(ImageView(this).apply {
                     setImageBitmap(decodificarMiniatura(bytes))
                     scaleType = ImageView.ScaleType.CENTER_CROP
+                    contentDescription = "Foto ${indice + 1} de ${fotos.size}; toque para ampliar"
                     setOnClickListener { mostrarFoto(bytes) }
                 }, LinearLayout.LayoutParams(dp(96), dp(96)).apply { setMargins(0, dp(6), dp(8), dp(6)) })
             }
@@ -693,7 +681,7 @@ private fun abrirDashboardFinanceiro() {
         content.addView(botaoVoltar("Relatório mensal") { abrirResumoMes() }, margemCard())
         content.addView(botaoVoltar("Relatório por cliente") { abrirResumoClientes() }, margemCard())
         content.addView(botaoVoltar("Gerar PDF financeiro") {
-            gerarPdfResumo(vendasCache, "resumo_alejoias.pdf")
+            gerarPdfResumo(vendasDashboard, "resumo_alejoias_${mesSelecionado}.pdf", mesSelecionado)
         }, margemCard())
     }
 
@@ -907,7 +895,7 @@ private fun abrirResumoMes() {
         }
 
         content.addView(botaoVoltar("Gerar PDF Deste Mês") {
-            gerarPdfResumo(vendasMes, "resumo_${mesSelecionado}.pdf")
+            gerarPdfResumo(vendasMes, "resumo_${mesSelecionado}.pdf", mesSelecionado)
         })
         content.addView(botaoVoltar("Exportar CSV Deste Mês") {
             exportarCsvResumo(vendasMes, "resumo_${mesSelecionado}.csv")
@@ -1408,10 +1396,10 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         }
     }
 
-    private fun gerarPdfResumo(lista: List<VendaRelatorio>, nomeArquivo: String) {
+    private fun gerarPdfResumo(lista: List<VendaRelatorio>, nomeArquivo: String, mesSelecionado: String) {
         try {
             val file = File(cacheDir, nomeArquivo)
-            gerarPdfGenerico(file, "Resumo AleJoias Vendas", lista)
+            gerarPdfGenerico(file, "Resumo AleJoias Vendas", lista, mesSelecionado = mesSelecionado)
             compartilharPdf(file)
         } catch (e: Exception) {
             Toast.makeText(this, "Erro ao gerar PDF.", Toast.LENGTH_LONG).show()
@@ -1430,7 +1418,8 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
     }
 
     private fun gerarPdfGenerico(
-        file: File, titulo: String, lista: List<VendaRelatorio>, incluirFotos: Boolean = true
+        file: File, titulo: String, lista: List<VendaRelatorio>, incluirFotos: Boolean = true,
+        mesSelecionado: String? = null
     ) {
         val pdf = PdfDocument()
 
@@ -1514,9 +1503,17 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         }
 
         fun periodoRelatorio(): String {
+            if (mesSelecionado != null) {
+                val calendario = Calendar.getInstance().apply {
+                    set(Calendar.DAY_OF_MONTH, 1)
+                    set(Calendar.YEAR, mesSelecionado.substring(0, 4).toInt())
+                    set(Calendar.MONTH, mesSelecionado.substring(5, 7).toInt() - 1)
+                }
+                return "$mesSelecionado-01 até $mesSelecionado-${calendario.getActualMaximum(Calendar.DAY_OF_MONTH)}"
+            }
             val datas = lista.mapNotNull { it.data_venda }.filter { it.isNotBlank() }.sorted()
-            val inicio = relatorioInicio ?: datas.firstOrNull()
-            val fim = relatorioFim ?: datas.lastOrNull()
+            val inicio = datas.firstOrNull()
+            val fim = datas.lastOrNull()
             return when {
                 inicio != null && fim != null -> "$inicio até $fim"
                 inicio != null -> inicio
@@ -1525,6 +1522,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         }
 
         fun mesReferencia(): String {
+            if (mesSelecionado != null) return mesPorExtenso(mesSelecionado)
             val meses = lista.mapNotNull { it.data_venda }.filter { it.length >= 7 }.map { it.substring(0, 7) }.distinct()
             return if (meses.size == 1) mesPorExtenso(meses.first()) else "Múltiplos meses"
         }
@@ -1563,6 +1561,9 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         canvas.drawText("Resumo Executivo", 40f, y.toFloat(), sectionPaint)
         y += 18
         campo("Total De Clientes", clientes.toString())
+        if (mesSelecionado != null) {
+            campo("Clientes Em Débito", lista.filter { it.saldo > 0.0 }.mapNotNull { it.nome_cliente }.distinct().size.toString())
+        }
         campo("Total De Vendas/Cards", lista.size.toString())
         campo("Valor Vendido", moeda.format(totalVendido))
         campo("Valor Recebido", moeda.format(totalPago))
