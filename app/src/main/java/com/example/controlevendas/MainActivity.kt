@@ -56,6 +56,10 @@ class MainActivity : AppCompatActivity() {
     private val corBorda = Color.rgb(222, 211, 194)
     private val corQuitado = Color.rgb(226, 244, 235)
     private val corVencido = Color.rgb(253, 232, 229)
+    private val corStatusParcialTexto = Color.rgb(156, 82, 20)
+    private val corStatusParcialFundo = Color.rgb(252, 224, 184)
+    private val corStatusAbertoTexto = Color.rgb(125, 87, 32)
+    private val corStatusAbertoFundo = Color.rgb(244, 229, 197)
 
     private lateinit var content: LinearLayout
     private lateinit var statusText: TextView
@@ -333,9 +337,9 @@ class MainActivity : AppCompatActivity() {
         val lista = vendasFiltradas().sortedByDescending { it.data_vencimento ?: "" }
         statusText.text = "Lista De Vendas | ${lista.size} Cards"
 
-        content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
+        content.addView(botaoVoltar("Voltar") { abrirMenuPrincipal() })
 
-        val pesquisaCliente = campo("Pesquisar Cliente, Descrição, Data Ou Valor").apply {
+        val pesquisaCliente = campo("Pesquisar Cliente").apply {
             setText(filtroCliente)
             setSingleLine(true)
             setOnEditorActionListener { _, _, _ ->
@@ -344,12 +348,36 @@ class MainActivity : AppCompatActivity() {
                 true
             }
         }
-        content.addView(campoRotulado("Pesquisa:", pesquisaCliente), margemCard())
-
-        content.addView(botaoVoltar("Aplicar Pesquisa") {
+        val campoPesquisa = campoRotulado("Pesquisa:", pesquisaCliente).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                .apply { setMargins(0, dp(5), dp(6), dp(5)) }
+        }
+        val aplicarPesquisa = botaoVoltar("Aplicar") {
             filtroCliente = pesquisaCliente.text.toString()
             abrirListaVendas()
+        }.apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                .apply { setMargins(0, dp(5), 0, dp(5)) }
+            minWidth = 0
+            minHeight = dp(48)
+            setPadding(dp(10), dp(6), dp(10), dp(6))
+        }
+        content.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(campoPesquisa)
+            addView(aplicarPesquisa)
         })
+
+        if (filtroInicio != null || filtroFim != null || filtrarAReceber || filtroCliente.isNotBlank()) {
+            content.addView(botaoVoltar("Limpar Filtros") {
+                filtroInicio = null
+                filtroFim = null
+                filtrarAReceber = false
+                filtroCliente = ""
+                abrirListaVendas()
+            })
+        }
 
         val filtros = linhaBotoes()
         filtros.addView(botaoQuadrado("Data", "Filtrar", 1f) { abrirFiltroPeriodoVendas() })
@@ -360,13 +388,6 @@ class MainActivity : AppCompatActivity() {
         content.addView(filtros)
 
         if (filtroInicio != null || filtroFim != null || filtrarAReceber || filtroCliente.isNotBlank()) {
-            content.addView(botaoVoltar("Limpar Filtros") {
-                filtroInicio = null
-                filtroFim = null
-                filtrarAReceber = false
-                filtroCliente = ""
-                abrirListaVendas()
-            })
             if (filtroInicio != null || filtroFim != null) {
                 content.addView(texto("Filtro: ${filtroInicio ?: "..."} até ${filtroFim ?: "..."}", 13f, false))
             }
@@ -517,7 +538,8 @@ class MainActivity : AppCompatActivity() {
                 when {
                     quitado -> corPrimariaEscura
                     vencido -> Color.rgb(153, 55, 47)
-                    else -> Color.rgb(125, 87, 32)
+                        venda.total_pago > 0.0 -> corStatusParcialTexto
+                        else -> corStatusAbertoTexto
                 }
             )
             gravity = Gravity.CENTER
@@ -526,7 +548,8 @@ class MainActivity : AppCompatActivity() {
                 when {
                     quitado -> Color.rgb(197, 231, 214)
                     vencido -> Color.rgb(248, 205, 199)
-                    else -> Color.rgb(244, 229, 197)
+                    venda.total_pago > 0.0 -> corStatusParcialFundo
+                    else -> corStatusAbertoFundo
                 },
                 18f
             )
@@ -660,7 +683,7 @@ private fun abrirDashboardFinanceiro() {
         val vendasDashboard = vendasCache.filter { (it.data_venda ?: "").startsWith(mesSelecionado) }
         statusText.text = "Financeiro e Relatórios | $mesSelecionado"
 
-        content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
+        content.addView(botaoVoltar("Voltar") { abrirMenuPrincipal() })
         content.addView(botaoVoltar("Selecionar Outro Mês") { abrirSelecionarMesDashboard() })
         adicionarCardResumo("Mês Selecionado", mesSelecionado)
 
@@ -687,7 +710,7 @@ private fun abrirDashboardFinanceiro() {
         linha2.addView(cardDashboard("A Receber", moeda.format(totalReceber), 1f) {
             abrirDetalhamentoFinanceiro("dashboard", "faltante")
         })
-        linha2.addView(cardDashboard("Clientes Débito", clientesDebito.toString(), 1f) {
+        linha2.addView(cardDashboard("Clientes", clientesDebito.toString(), 1f) {
             abrirDetalhamentoFinanceiro("dashboard", "clientes_debito")
         })
         content.addView(linha2)
@@ -707,7 +730,6 @@ private fun abrirDashboardFinanceiro() {
             setPadding(0, dp(18), 0, dp(6))
         })
         content.addView(botaoVoltar("Relatório por período") { abrirFiltroResumoPeriodo() }, margemCard())
-        content.addView(botaoVoltar("Relatório mensal") { abrirResumoMes() }, margemCard())
         content.addView(botaoVoltar("Relatório por cliente") { abrirResumoClientes() }, margemCard())
         content.addView(botaoVoltar("Gerar PDF financeiro") {
             gerarPdfResumo(vendasDashboard, "resumo_alejoias_${mesSelecionado}.pdf", mesSelecionado)
@@ -752,7 +774,7 @@ private fun abrirDashboardFinanceiro() {
             "abertos" -> "Cards em aberto"
             "vencidos" -> "Cards vencidos"
             "quitados" -> "Cards quitados"
-            "clientes_debito" -> "Clientes em débito"
+            "clientes_debito" -> "Clientes"
             else -> "Todos os cards"
         }
         val periodo = when (origem) {
@@ -769,7 +791,7 @@ private fun abrirDashboardFinanceiro() {
             else -> lista.size.toString()
         }
         statusText.text = "$titulo | $periodo"
-        content.addView(botaoVoltar("Voltar Ao Relatório") { voltarDetalhamentoFinanceiro() })
+        content.addView(botaoVoltar("Voltar") { voltarDetalhamentoFinanceiro() })
         adicionarCardResumo(titulo, total)
         content.addView(texto("$periodo • ${lista.size} cards", 14f, false), margemCard())
         if (lista.isEmpty()) {
@@ -855,7 +877,7 @@ private fun abrirDashboardFinanceiro() {
         content.removeAllViews()
         statusText.text = "Resumo Por Período"
 
-        content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
+        content.addView(botaoVoltar("Voltar") { abrirDashboardFinanceiro() })
         content.addView(botaoVoltar("Alterar Período") { abrirFiltroResumoPeriodo() })
 
         val lista = vendasCache.filter { venda ->
@@ -893,7 +915,7 @@ private fun abrirResumoMes() {
         content.removeAllViews()
         statusText.text = "Relatório Mensal"
 
-        content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
+        content.addView(botaoVoltar("Voltar") { abrirDashboardFinanceiro() })
 
         val mesSelecionado = mesResumoSelecionado ?: mesAtual
         val vendasMes = vendasCache.filter { (it.data_venda ?: "").startsWith(mesSelecionado) }
@@ -971,11 +993,25 @@ private fun abrirResumoMes() {
                 true
             }
         }
-        content.addView(campoRotulado("Cliente:", pesquisaCliente), margemCard())
-
-        content.addView(botaoVoltar("Aplicar Pesquisa") {
+        val campoCliente = campoRotulado("Cliente:", pesquisaCliente).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                .apply { setMargins(0, dp(5), dp(6), dp(5)) }
+        }
+        val aplicarCliente = botaoVoltar("Aplicar") {
             filtroClienteResumo = pesquisaCliente.text.toString()
             abrirResumoClientes()
+        }.apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                .apply { setMargins(0, dp(5), 0, dp(5)) }
+            minWidth = 0
+            minHeight = dp(48)
+            setPadding(dp(10), dp(6), dp(10), dp(6))
+        }
+        content.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(campoCliente)
+            addView(aplicarCliente)
         })
 
         if (filtroClienteResumo.isNotBlank()) {
@@ -1036,7 +1072,7 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
         content.removeAllViews()
         statusText.text = "Histórico Do Cliente"
 
-        content.addView(botaoVoltar("Voltar Ao Resumo Por Cliente") { abrirResumoClientes() })
+        content.addView(botaoVoltar("Voltar") { abrirResumoClientes() })
 
         val totalVendido = vendas.sumOf { it.valor_total }
         val totalRecebido = vendas.sumOf { it.total_pago }
@@ -1207,7 +1243,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         content.removeAllViews()
         statusText.text = "Dados Locais E Sincronização"
 
-        content.addView(botaoVoltar("Voltar Ao Menu") { abrirMenuPrincipal() })
+        content.addView(botaoVoltar("Voltar") { abrirMenuPrincipal() })
         adicionarCardResumo("Cards No SQLite", vendasCache.size.toString())
         adicionarCardResumo("Alterações Pendentes", localDb.pendingSyncCount().toString())
 
@@ -2231,6 +2267,17 @@ private fun criarCanalNotificacoes() {
         minHeight = dp(50)
         setPadding(dp(16), dp(8), dp(16), dp(8))
         setOnClickListener { acao() }
+        val moverParaFim = texto.equals("Voltar", ignoreCase = true) ||
+                texto.equals("Selecionar Outro Mês", ignoreCase = true) ||
+                texto.equals("Gerar Extrato PDF", ignoreCase = true)
+        if (moverParaFim) {
+            post {
+                if (parent === content) {
+                    content.removeView(this)
+                    content.addView(this)
+                }
+            }
+        }
     }
 
     private fun adicionarCardResumo(
@@ -2289,7 +2336,7 @@ private fun criarCanalNotificacoes() {
 
     private fun campo(hint: String): EditText = EditText(this).apply {
         this.hint = hint
-        textSize = 16f
+        textSize = if (hint.startsWith("Pesquisar", ignoreCase = true)) 14f else 16f
         setTextColor(corTexto)
         setHintTextColor(corTextoSecundario)
         backgroundTintList = android.content.res.ColorStateList.valueOf(corDestaque)
