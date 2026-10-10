@@ -119,3 +119,63 @@ indicadores, mas deve manter a linguagem da marca. A sequência recomendada é:
 
 O objetivo é consistência visual entre telas, não uma conversão para Flutter ou
 uma cópia da identidade do outro projeto.
+
+## Adaptação de UI do Vendas Simples — 10/10/2026
+
+Pedido explícito: aplicar na master do AleJoias; comercial deixa de ser alvo.
+Origem: árvore local do Vendas Simples sobre HEAD 5b496bc, incluindo alterações
+não commitadas descritas em docs/ATUALIZACAO_ALPHA_UI_BILLING.md.
+Skills do Vendas Simples consultadas; regras comerciais não foram transferidas.
+
+- Seta no cabeçalho e Voltar Android usam o mesmo destino em oito telas; no menu
+  a seta fica oculta e a saída segue o comportamento padrão do Android.
+- Histórico retorna à lista de clientes; relatórios retornam ao Financeiro.
+- Pesquisa sem rótulo duplicado, filtros com ícones e estado ativo acessível.
+- Cards com espaçamento menor e fotos de 80 dp, mantendo textos e ações.
+- Detalhes com título e ações fixas, valores antes da descrição e conteúdo rolável.
+  Registrar Pagamento aparece com saldo positivo; PDF e Fechar permanecem.
+- Nova venda/edição com campos compactos, layout adaptado à largura/fonte,
+  ações fora da rolagem e confirmação de descarte em Cancelar/Voltar.
+- Preservados marca, verde/dourado, applicationId, versões, schema, IDs,
+  cálculos, pagamentos, fotos, notificações, PDFs, CSV, backup e sync.
+
+Comparação estática confirmou código idêntico de filtro, pagamentos, correção,
+PDF do card, CSV, cobrança WhatsApp e carregamento. O listener Salvar da venda
+foi preservado integralmente. Isso não substitui homologação funcional.
+
+Checklist manual pendente: oito destinos de retorno, menu ⋮/sync, teclado,
+descarte/continuação, fotos, detalhes abertos/parciais/quitados, fonte 200%,
+telefone estreito, paisagem, Android 23 e recente, venda/edição/pagamentos,
+PDF/CSV/backup, operação offline e sync sem duplicação. Não usar dados reais
+em fixtures. Rascunho após rotação/process death e posição de rolagem não
+passam a ter restauração garantida por esta mudança.
+
+Nas etapas de implementação não houve commit, push ou publicação. Em seguida,
+o usuário autorizou explicitamente documentar as skills e publicar as alterações
+na master com uma tag. A branch comercial não foi modificada.
+
+Validação automatizada: assembleDebug --offline com JBR 21 concluído em 4m26s (BUILD SUCCESSFUL). git diff --check passou. APK: app/build/outputs/apk/debug/app-debug.apk. Avisos de compileSdk/AGP, ajuste de teclado depreciado e parâmetro não usado; sem erros. adb devices não encontrou dispositivo; testes manuais não executados.
+
+## Escolha de destino do backup — 10/10/2026
+
+Em Dados e sincronização, Fazer Backup Do SQLite abre o seletor de arquivos do
+Android (CreateDocument), com nome sugerido backup_alejoias_DATA_HORA.db.
+O usuário escolhe nome e local entre os provedores disponíveis no aparelho.
+Cancelar não copia nem fecha o banco. Depois da escolha, a rotina existente
+fecha/copia/reabre o SQLite e grava a cópia no URI selecionado; a cópia interna
+temporária é removida ao terminar. Sucesso só é exibido após fechar o stream.
+Falha de acesso/gravação informa erro; um documento vazio ou parcial pode ficar
+no provedor escolhido e não deve ser tratado como backup válido.
+
+Compartilhar Backup SQLite mantém seu fluxo anterior. Schema, IDs, fotos/BLOBs,
+metadados de sincronização, formato SQLite AleJoias e backend não mudaram.
+Não foi importado o formato/schema nem o restaurador do Vendas Simples.
+Restauração pela interface não é adicionada por esta alteração.
+
+Homologação manual pendente: salvar em pasta local com nome padrão/renomeado,
+cancelar e repetir, destino indisponível/sem espaço, reiniciar e continuar
+vendendo, compartilhar pelo fluxo anterior. Com dados sintéticos, inspecionar
+a cópia com integrity_check e conferir vendas, pagamentos, fotos e metadados.
+Provedor remoto depende de sua própria disponibilidade; selecionar destino
+não implica confirmação de envio para nuvem.
+Validação do destino do backup: assembleDebug --offline concluído com BUILD SUCCESSFUL em 1m1s; git diff --check passou. Sem dispositivo conectado em adb devices: seleção, cancelamento e integridade do arquivo exportado ainda exigem teste manual. APK debug atualizado; sem commit/push.

@@ -109,3 +109,13 @@ afetada, validar a mudança, revisar o diff e fazer commit e push seguindo
 `docs/VERSIONAMENTO_GIT.md`. Essa rotina já está autorizada, sem necessidade
 de pedir nova confirmação a cada alteração. Informar qualquer impedimento
 de publicação e os testes que ainda dependem do aparelho.
+
+## Skills locais
+
+- [alejoias-interface](.agents/skills/alejoias-interface/SKILL.md): menus,
+  navegação, cards e diálogos com a identidade AleJoias.
+- [alejoias-backup](.agents/skills/alejoias-backup/SKILL.md): backup SQLite,
+  seletor de destino, compartilhamento e preservação dos dados.
+
+Leia a skill pertinente ao alterar esses fluxos. Regras e resultados do produto
+ficam nos documentos; as skills mantêm o procedimento reutilizável.

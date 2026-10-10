@@ -87,3 +87,21 @@ OBSERVAÇÃO DE BUILD
   alejoias-v2-marco-2026-09-24.
 - Autorizada linha independente comercial: Vendas Simples, azul/cinza, local,
   sem integração com Google Planilhas. AleJoias permanece na master.
+
+10/10/2026 — Adaptação de UI na master
+- Navegação por seta/Voltar unificada; filtros e cards compactos.
+- Detalhes com ações fixas; formulário com confirmação de descarte.
+- Identidade AleJoias e funcionalidades SQLite/Planilhas preservadas.
+- Homologação manual pendente; detalhes em docs/INTERFACE_VISUAL.md.
+- assembleDebug --offline: BUILD SUCCESSFUL; diff validado; sem dispositivo para homologação manual.
+
+10/10/2026 — Escolher onde salvar backup
+- Fazer Backup Do SQLite abre o seletor Android para escolher nome e destino.
+- Cancelamento preserva o banco; erros são informados sem mensagem de sucesso.
+- Formato AleJoias e compartilhamento anterior preservados; sem mudança de schema.
+- Build debug aprovado em 1m1s; seletor e integridade da cópia aguardam teste no aparelho.
+
+10/10/2026 — Skills locais e marco Git
+- Criadas alejoias-interface e alejoias-backup; links no README e AGENTS.
+- Marco solicitado: alejoias-ui-backup-2026-10-10; label ui-ux-backup.
+- Build debug aprovado; homologação manual continua pendente.

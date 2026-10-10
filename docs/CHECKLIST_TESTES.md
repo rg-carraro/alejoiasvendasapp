@@ -65,3 +65,20 @@ Após mudanças, testar pelo menos:
 - [ ] SQLite → Planilha;
 - [ ] sync repetido sem duplicação;
 - [ ] funcionamento offline.
+
+## UI adaptada em 10/10/2026
+
+- [ ] Seta e Voltar Android equivalentes nas oito telas; menu sem seta.
+- [ ] Histórico volta para clientes; relatórios para Financeiro.
+- [ ] Cancelar/Voltar confirma descarte de campos/fotos alterados.
+- [ ] Teclado, fonte 200%, paisagem e telefone estreito sem ações inacessíveis.
+- [ ] Detalhes roláveis com ações fixas e fotos ampliáveis.
+- [ ] Menu ⋮ e todos os fluxos de sincronização continuam acessíveis.
+
+## Destino do backup — 10/10/2026
+
+- [ ] Fazer Backup abre o seletor Android e permite escolher nome/pasta.
+- [ ] Cancelar não gera backup nem impede continuar usando o app.
+- [ ] Salvar localmente e conferir integridade, pagamentos, fotos e sync na cópia.
+- [ ] Falha de gravação não exibe sucesso e preserva o banco original.
+- [ ] Compartilhar Backup SQLite continua funcionando.

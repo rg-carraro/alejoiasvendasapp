@@ -107,3 +107,23 @@ anteriores e inclui `sync_export` e `sync_upload`.
 Leia [AGENTS.md](AGENTS.md) antes de modificar o projeto. Toda mudança deve ser
 pontual, preservar o schema e os IDs e ser validada conforme
 [docs/CHECKLIST_TESTES.md](docs/CHECKLIST_TESTES.md).
+
+## Melhoria de usabilidade — 10/10/2026
+
+A master recebeu navegação por seta no cabeçalho, filtros e cards compactos,
+detalhes com ações fixas e confirmação de descarte no formulário. A identidade
+AleJoias e a integração SQLite/Planilhas foram mantidas. Consulte
+[interface visual](docs/INTERFACE_VISUAL.md) para escopo e validação.
+
+Em **Dados e sincronização → Fazer Backup Do SQLite**, escolha o nome e o local
+do arquivo pelo seletor Android. **Compartilhar Backup SQLite** continua disponível.
+
+## Skills locais
+
+- [alejoias-interface](.agents/skills/alejoias-interface/SKILL.md): menus,
+  navegação, cards e diálogos com a identidade AleJoias.
+- [alejoias-backup](.agents/skills/alejoias-backup/SKILL.md): backup SQLite,
+  seletor de destino, compartilhamento e preservação dos dados.
+
+Leia a skill pertinente ao alterar esses fluxos. Regras e resultados do produto
+ficam nos documentos; as skills mantêm o procedimento reutilizável.

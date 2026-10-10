@@ -32,6 +32,10 @@ import android.os.Handler
 import android.os.Looper
 import android.text.InputType
 import android.view.Gravity
+import android.view.View
+import android.view.KeyEvent
+import android.view.WindowManager
+import androidx.activity.OnBackPressedCallback
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -68,6 +72,23 @@ class MainActivity : AppCompatActivity() {
     private var listaFotosRascunho: LinearLayout? = null
     private var arquivoCamera: File? = null
 
+    private val criarArquivoBackup = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/octet-stream")
+    ) { uri ->
+        if (uri == null) return@registerForActivityResult
+        val copia = fazerBackupBancoSqlite(notificarSucesso = false) ?: return@registerForActivityResult
+        try {
+            val saida = contentResolver.openOutputStream(uri, "wt")
+                ?: error("Não foi possível abrir o local escolhido.")
+            saida.use { destino -> copia.inputStream().use { origem -> origem.copyTo(destino) } }
+            Toast.makeText(this, "Backup salvo no local escolhido.", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Não foi possível salvar o backup: ${e.message}", Toast.LENGTH_LONG).show()
+        } finally {
+            copia.delete()
+        }
+    }
+
     private val selecionarFotos = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         if (listaFotosRascunho != null) {
             uris.forEach { adicionarFotoRascunho(it) }
@@ -83,6 +104,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var vendasCache: List<VendaRelatorio> = emptyList()
+    private lateinit var setaVoltar: ImageButton
+    private var voltarDaTela: (() -> Unit)? = null
+    private val voltarCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() { voltarDaTela?.invoke() }
+    }
     private var telaAtual = "menu"
     private var origemDetalheFinanceiro = "dashboard"
     private var metricaDetalheFinanceiro = "vendido"
@@ -127,6 +153,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        onBackPressedDispatcher.addCallback(this, voltarCallback)
         montarTela()
         criarCanalNotificacoes()
         localDb = LocalDatabase(this)
@@ -143,13 +170,10 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    override fun onBackPressed() {
-        when (telaAtual) {
-            "financeiro_detalhe" -> voltarDetalhamentoFinanceiro()
-            "resumo_periodo", "resumo_mes" -> abrirDashboardFinanceiro()
-            "menu" -> super.onBackPressed()
-            else -> abrirMenuPrincipal()
-        }
+    private fun configurarRetorno(acao: (() -> Unit)?) {
+        voltarDaTela = acao
+        voltarCallback.isEnabled = acao != null
+        if (::setaVoltar.isInitialized) setaVoltar.visibility = if (acao == null) View.GONE else View.VISIBLE
     }
 
     private fun montarTela() {
@@ -179,9 +203,20 @@ class MainActivity : AppCompatActivity() {
             background = fundoArredondadoComBorda(corSuperficie, 28f, corBorda)
         }
 
+        setaVoltar = ImageButton(this).apply {
+            setImageResource(R.drawable.ic_back)
+            imageTintList = android.content.res.ColorStateList.valueOf(corPrimariaEscura)
+            background = fundoArredondado(corSuperficie, 20f)
+            contentDescription = "Voltar à tela anterior"
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            visibility = View.GONE
+            setOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        }
+        header.addView(setaVoltar, LinearLayout.LayoutParams(dp(48), dp(48)))
+
         val titulo = TextView(this).apply {
             text = "AleJoias Vendas"
-            textSize = if (resources.displayMetrics.widthPixels < 900) 24f else 29f
+            textSize = if (resources.configuration.screenWidthDp < 360 || resources.configuration.fontScale > 1.3f) 20f else 24f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextColor(corPrimariaEscura)
@@ -189,6 +224,7 @@ class MainActivity : AppCompatActivity() {
 
         val subtitulo = TextView(this).apply {
             text = "ERP Simples De Vendas"
+            visibility = if (resources.configuration.screenHeightDp < 400) View.GONE else View.VISIBLE
             textSize = 14f
             gravity = Gravity.CENTER
             setTextColor(corDestaque)
@@ -203,7 +239,7 @@ class MainActivity : AppCompatActivity() {
         header.addView(marca, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         header.addView(TextView(this).apply {
             text = "⋮"
-            textSize = 30f
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 30f)
             gravity = Gravity.CENTER
             setTextColor(corPrimariaEscura)
             contentDescription = "Mais opções"
@@ -234,13 +270,13 @@ class MainActivity : AppCompatActivity() {
         val scroll = ScrollView(this).apply {
             isFillViewport = false
             clipToPadding = false
-            setPadding(0, 0, 0, dp(96))
+            setPadding(0, 0, 0, dp(8))
             setBackgroundColor(Color.TRANSPARENT)
         }
 
         content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(0, 0, 0, dp(96))
+            setPadding(0, 0, 0, dp(8))
             setBackgroundColor(Color.TRANSPARENT)
         }
 
@@ -281,6 +317,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun abrirMenuPrincipal() {
         telaAtual = "menu"
+        configurarRetorno(null)
         content.removeAllViews()
         statusText.text = "Menu Principal"
 
@@ -337,7 +374,7 @@ class MainActivity : AppCompatActivity() {
         val lista = vendasFiltradas().sortedByDescending { it.data_vencimento ?: "" }
         statusText.text = "Lista De Vendas | ${lista.size} Cards"
 
-        content.addView(botaoVoltar("Voltar") { abrirMenuPrincipal() })
+        configurarRetorno { abrirMenuPrincipal() }
 
         val pesquisaCliente = campo("Pesquisar Cliente").apply {
             setText(filtroCliente)
@@ -348,9 +385,10 @@ class MainActivity : AppCompatActivity() {
                 true
             }
         }
-        val campoPesquisa = campoRotulado("Pesquisa:", pesquisaCliente).apply {
+        val campoPesquisa = pesquisaCliente.apply {
+            minHeight = dp(48)
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                .apply { setMargins(0, dp(5), dp(6), dp(5)) }
+                .apply { setMargins(0, 0, dp(8), 0) }
         }
         val aplicarPesquisa = botaoVoltar("Aplicar") {
             filtroCliente = pesquisaCliente.text.toString()
@@ -379,13 +417,12 @@ class MainActivity : AppCompatActivity() {
             })
         }
 
-        val filtros = linhaBotoes()
-        filtros.addView(botaoQuadrado("Data", "Filtrar", 1f) { abrirFiltroPeriodoVendas() })
-        filtros.addView(botaoQuadrado(if (filtrarAReceber) "Todos" else "A Receber", "Cards", 1f) {
+        val filtroData = botaoFiltro("Data", R.drawable.ic_calendar, filtroInicio != null || filtroFim != null) { abrirFiltroPeriodoVendas() }
+        val filtroReceber = botaoFiltro(if (filtrarAReceber) "Todos" else "A receber", R.drawable.ic_money, filtrarAReceber) {
             filtrarAReceber = !filtrarAReceber
             abrirListaVendas()
-        })
-        content.addView(filtros)
+        }
+        content.addView(linhaResponsiva(filtroData, filtroReceber))
 
         if (filtroInicio != null || filtroFim != null || filtrarAReceber || filtroCliente.isNotBlank()) {
             if (filtroInicio != null || filtroFim != null) {
@@ -467,7 +504,7 @@ class MainActivity : AppCompatActivity() {
 
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(12))
+            setPadding(dp(12), dp(8), dp(12), dp(8))
             background = fundoArredondadoComBorda(corCard, 20f, corBorda)
             isClickable = true
             setOnClickListener { abrirOpcoesCard(venda) }
@@ -477,10 +514,10 @@ class MainActivity : AppCompatActivity() {
         card.addView(etiquetaStatus(venda))
         adicionarFotoNoCard(card, venda)
         card.addView(TextView(this).apply {
-            text = "$parcelaInfo\n" +
+            text = "$parcelaInfo • " +
                     "Compra: ${venda.data_venda ?: "-"}\n" +
                     "Vencimento: ${venda.data_vencimento ?: "-"}\n" +
-                    "Valor: ${moeda.format(venda.valor_total)}\n" +
+                    "Valor: ${moeda.format(venda.valor_total)} • " +
                     "Pago: ${moeda.format(venda.total_pago)}\n" +
                     (if (venda.total_pago > 0.0) "Data Pagamento: ${dataPagamentoLocal(venda)}\n" else "") +
                     "Faltante: ${moeda.format(venda.saldo)}"
@@ -489,7 +526,7 @@ class MainActivity : AppCompatActivity() {
             setPadding(0, dp(6), 0, 0)
         })
 
-        content.addView(card, margemCard())
+        content.addView(card, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, dp(4), 0, dp(4)) })
     }
 
     private fun adicionarFotoNoCard(card: LinearLayout, venda: VendaRelatorio) {
@@ -504,8 +541,8 @@ class MainActivity : AppCompatActivity() {
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Foto do produto; toque para ver todas as fotos da venda"
             setOnClickListener { abrirDetalhesVenda(venda) }
-        }, LinearLayout.LayoutParams(dp(104), dp(104)).apply {
-            setMargins(0, dp(8), 0, dp(5))
+        }, LinearLayout.LayoutParams(dp(80), dp(80)).apply {
+            setMargins(0, dp(4), 0, dp(4))
         })
         linhaFoto.addView(botaoVoltar("Ver fotos") { abrirDetalhesVenda(venda) }.apply {
             contentDescription = "Ver todas as fotos da venda"
@@ -591,23 +628,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun abrirDetalhesVenda(venda: VendaRelatorio) {
+        val cabecalhoCompacto = resources.configuration.fontScale > 1.3f || resources.configuration.screenHeightDp < 400
         val painel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(18), dp(12), dp(18), dp(10))
+            setPadding(dp(16), dp(4), dp(16), dp(4))
             background = fundoArredondadoComBorda(corSuperficie, 22f, corBorda)
         }
 
-        painel.addView(texto(venda.nome_cliente ?: "Cliente não informado", 20f, true).apply {
-            setTextColor(corPrimariaEscura)
-        })
-        painel.addView(etiquetaStatus(venda))
-        painel.addView(linhaDetalhe("Descrição", venda.descricao ?: "-"))
-        painel.addView(linhaDetalhe("Data da compra", venda.data_venda ?: "-"))
-        painel.addView(linhaDetalhe("Vencimento", venda.data_vencimento ?: "-"))
-        painel.addView(linhaDetalhe("Parcela", "${venda.parcela_atual ?: 1}/${venda.parcelas ?: 1}"))
-        painel.addView(linhaDetalhe("Valor da venda", moeda.format(venda.valor_total), true))
-        painel.addView(linhaDetalhe("Valor pago", moeda.format(venda.total_pago), true))
+        if (cabecalhoCompacto) painel.addView(etiquetaStatus(venda))
+        painel.addView(linhaDetalhe("Cliente", venda.nome_cliente ?: "Cliente não informado"))
+        painel.addView(linhaResponsiva(linhaDetalhe("Valor da venda", moeda.format(venda.valor_total), true), linhaDetalhe("Valor pago", moeda.format(venda.total_pago), true)))
         painel.addView(linhaDetalhe("Saldo faltante", moeda.format(venda.saldo), true))
+        painel.addView(linhaDetalhe("Descrição", venda.descricao ?: "-"))
+        painel.addView(linhaResponsiva(linhaDetalhe("Data da compra", venda.data_venda ?: "-"), linhaDetalhe("Vencimento", venda.data_vencimento ?: "-")))
+        painel.addView(linhaDetalhe("Parcela", "${venda.parcela_atual ?: 1}/${venda.parcelas ?: 1}"))
 
         val fotos = localDb.getFotosVenda(venda.id_venda_pai)
         if (fotos.isNotEmpty()) {
@@ -633,19 +667,73 @@ class MainActivity : AppCompatActivity() {
             painel.addView(linhaDetalhe("Data do pagamento", dataPagamentoLocal(venda)))
         }
 
-        AlertDialog.Builder(this)
-            .setTitle("Detalhes Da Venda")
-            .setView(ScrollView(this).apply { addView(painel) })
-            .setPositiveButton("Registrar Pagamento") { _, _ -> abrirDialogPagamento(venda) }
-            .setNeutralButton("PDF do card") { _, _ -> gerarPdfCard(venda) }
-            .setNegativeButton("Fechar", null)
-            .show()
+        val estrutura = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        val cabecalho = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(4))
+            addView(texto("Detalhes da Venda", if (cabecalhoCompacto && resources.configuration.screenWidthDp < 360) 16f else 20f, true).apply { setTextColor(corPrimariaEscura) })
+            if (!cabecalhoCompacto) addView(etiquetaStatus(venda))
+        }
+        estrutura.addView(cabecalho)
+        estrutura.addView(ScrollView(this).apply { addView(painel) }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        lateinit var dialog: AlertDialog
+        // O formulário existente aceita apenas valor positivo até o saldo.
+        val pagamento = if (venda.saldo > 0.0) botaoVoltar("Registrar Pagamento") { dialog.dismiss(); abrirDialogPagamento(venda) } else null
+        val pdf = botaoVoltar("PDF do Card") { dialog.dismiss(); gerarPdfCard(venda) }
+        val fechar = botaoVoltar("Fechar") { dialog.dismiss() }.apply {
+            setTextColor(corPrimaria)
+            background = fundoArredondadoComBorda(corSuperficie, 22f, corBorda)
+        }
+        val rodape = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(4), dp(12), dp(8))
+            background = fundoArredondadoComBorda(corSuperficie, 16f, corBorda)
+            if (pagamento != null) addView(pagamento, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+            addView(LinearLayout(this@MainActivity).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                addView(pdf, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+                addView(fechar, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { leftMargin = dp(8) })
+            }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { if (pagamento != null) topMargin = dp(4) })
+        }
+        estrutura.addView(rodape)
+        dialog = AlertDialog.Builder(this).setView(estrutura).create()
+        dialog.show()
+        dialog.window?.setLayout(LinearLayout.LayoutParams.MATCH_PARENT, minOf(dp(680), (dp(resources.configuration.screenHeightDp) * 0.9).toInt()))
+    }
+
+    private fun linhaResponsiva(vararg elementos: View, larguraMinima: Int = 360): LinearLayout = LinearLayout(this).apply {
+        val horizontal = resources.configuration.screenWidthDp >= larguraMinima &&
+            (resources.configuration.fontScale <= 1.3f || (resources.configuration.screenHeightDp < 400 && resources.configuration.screenWidthDp >= 600))
+        orientation = if (horizontal) LinearLayout.HORIZONTAL else LinearLayout.VERTICAL
+        elementos.forEachIndexed { indice, elemento ->
+            addView(elemento, LinearLayout.LayoutParams(
+                if (horizontal) 0 else LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                if (horizontal) 1f else 0f
+            ).apply {
+                if (indice > 0) { if (horizontal) leftMargin = dp(8) else topMargin = dp(4) }
+            })
+        }
+    }
+
+    private fun botaoFiltro(rotulo: String, icone: Int, ativo: Boolean, acao: () -> Unit): Button = botaoVoltar(rotulo, acao).apply {
+        minWidth = dp(48)
+        minHeight = dp(48)
+        setPadding(dp(10), dp(6), dp(10), dp(6))
+        setCompoundDrawablesWithIntrinsicBounds(icone, 0, 0, 0)
+        compoundDrawablePadding = dp(8)
+        compoundDrawableTintList = android.content.res.ColorStateList.valueOf(if (ativo) Color.WHITE else corPrimaria)
+        setTextColor(if (ativo) Color.WHITE else corPrimaria)
+        background = if (ativo) fundoArredondado(corPrimaria, 18f) else fundoArredondadoComBorda(corSuperficie, 18f, corBorda)
+        isSelected = ativo
+        contentDescription = "$rotulo: filtro ${if (ativo) "ativo" else "inativo"}"
     }
 
     private fun linhaDetalhe(rotulo: String, valor: String, destaque: Boolean = false): LinearLayout =
         LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(0, dp(9), 0, dp(8))
+            setPadding(0, dp(3), 0, dp(3))
 
             addView(texto("$rotulo:", 12f, true).apply {
                 setTextColor(corTextoSecundario)
@@ -683,7 +771,7 @@ private fun abrirDashboardFinanceiro() {
         val vendasDashboard = vendasCache.filter { (it.data_venda ?: "").startsWith(mesSelecionado) }
         statusText.text = "Financeiro e Relatórios | $mesSelecionado"
 
-        content.addView(botaoVoltar("Voltar") { abrirMenuPrincipal() })
+        configurarRetorno { abrirMenuPrincipal() }
         content.addView(botaoVoltar("Selecionar Outro Mês") { abrirSelecionarMesDashboard() })
         adicionarCardResumo("Mês Selecionado", mesSelecionado)
 
@@ -791,7 +879,7 @@ private fun abrirDashboardFinanceiro() {
             else -> lista.size.toString()
         }
         statusText.text = "$titulo | $periodo"
-        content.addView(botaoVoltar("Voltar") { voltarDetalhamentoFinanceiro() })
+        configurarRetorno { voltarDetalhamentoFinanceiro() }
         adicionarCardResumo(titulo, total)
         content.addView(texto("$periodo • ${lista.size} cards", 14f, false), margemCard())
         if (lista.isEmpty()) {
@@ -877,7 +965,7 @@ private fun abrirDashboardFinanceiro() {
         content.removeAllViews()
         statusText.text = "Resumo Por Período"
 
-        content.addView(botaoVoltar("Voltar") { abrirDashboardFinanceiro() })
+        configurarRetorno { abrirDashboardFinanceiro() }
         content.addView(botaoVoltar("Alterar Período") { abrirFiltroResumoPeriodo() })
 
         val lista = vendasCache.filter { venda ->
@@ -915,7 +1003,7 @@ private fun abrirResumoMes() {
         content.removeAllViews()
         statusText.text = "Relatório Mensal"
 
-        content.addView(botaoVoltar("Voltar") { abrirDashboardFinanceiro() })
+        configurarRetorno { abrirDashboardFinanceiro() }
 
         val mesSelecionado = mesResumoSelecionado ?: mesAtual
         val vendasMes = vendasCache.filter { (it.data_venda ?: "").startsWith(mesSelecionado) }
@@ -982,7 +1070,7 @@ private fun abrirResumoMes() {
         content.removeAllViews()
         statusText.text = "Relatório Por Cliente"
 
-        content.addView(botaoVoltar("Voltar Ao Financeiro") { abrirDashboardFinanceiro() })
+        configurarRetorno { abrirDashboardFinanceiro() }
 
         val pesquisaCliente = campo("Pesquisar Cliente").apply {
             setText(filtroClienteResumo)
@@ -1072,7 +1160,7 @@ private fun abrirHistoricoCliente(cliente: String, vendas: List<VendaRelatorio>)
         content.removeAllViews()
         statusText.text = "Histórico Do Cliente"
 
-        content.addView(botaoVoltar("Voltar") { abrirResumoClientes() })
+        configurarRetorno { abrirResumoClientes() }
 
         val totalVendido = vendas.sumOf { it.valor_total }
         val totalRecebido = vendas.sumOf { it.total_pago }
@@ -1243,7 +1331,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         content.removeAllViews()
         statusText.text = "Dados Locais E Sincronização"
 
-        content.addView(botaoVoltar("Voltar") { abrirMenuPrincipal() })
+        configurarRetorno { abrirMenuPrincipal() }
         adicionarCardResumo("Cards No SQLite", vendasCache.size.toString())
         adicionarCardResumo("Alterações Pendentes", localDb.pendingSyncCount().toString())
 
@@ -1264,7 +1352,11 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         })
 
         content.addView(botaoVoltar("Fazer Backup Do SQLite") {
-            fazerBackupBancoSqlite()
+            try {
+                criarArquivoBackup.launch("backup_alejoias_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.db")
+            } catch (e: Exception) {
+                Toast.makeText(this, "Não foi possível abrir o seletor de arquivos: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         })
 
         content.addView(botaoVoltar("Compartilhar Backup SQLite") {
@@ -1415,14 +1507,14 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         })
     }
 
-    private fun fazerBackupBancoSqlite(): File? {
+    private fun fazerBackupBancoSqlite(notificarSucesso: Boolean = true): File? {
         return try {
             localDb.close()
             val origem = getDatabasePath(LocalDatabase.DB_NAME)
             val destino = File(filesDir, "backup_alejoias_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.db")
             origem.copyTo(destino, overwrite = true)
             localDb = LocalDatabase(this)
-            Toast.makeText(this, "Backup SQLite salvo.", Toast.LENGTH_SHORT).show()
+            if (notificarSucesso) Toast.makeText(this, "Backup SQLite salvo.", Toast.LENGTH_SHORT).show()
             destino
         } catch (e: Exception) {
             localDb = LocalDatabase(this)
@@ -1757,7 +1849,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
         listaFotosRascunho = null
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(28), dp(8), dp(28), dp(8))
+            setPadding(dp(16), dp(4), dp(16), dp(4))
         }
 
         val nomes = vendasCache.mapNotNull { it.nome_cliente }.filter { it.isNotBlank() }.distinct().sorted()
@@ -1791,15 +1883,22 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
 
         val descricao = campo("Descrição Da Venda").apply {
             setText(vendaExistente?.descricao ?: "")
-            minLines = 3
+            minLines = 2
             maxLines = 3
             gravity = Gravity.TOP
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
         }
 
         layout.addView(campoRotulado("Nome:", nomeCliente))
-        layout.addView(campoRotulado("Valor total:", valor))
-        layout.addView(campoRotulado("Parcelas:", parcelas))
+        if (resources.configuration.screenWidthDp >= 360 && resources.configuration.fontScale <= 1.3f) {
+            val valores = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            valores.addView(campoRotulado("Valor total:", valor), LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.5f))
+            valores.addView(campoRotulado("Parcelas:", parcelas), LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { leftMargin = dp(8) })
+            layout.addView(valores)
+        } else {
+            layout.addView(campoRotulado("Valor total:", valor))
+            layout.addView(campoRotulado("Parcelas:", parcelas))
+        }
         layout.addView(campoRotulado("Data da compra:", data))
         layout.addView(campoRotulado("Descrição:", descricao))
 
@@ -1822,6 +1921,8 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             layout.addView(listaFotosRascunho)
         }
 
+        val campos = listOf(nomeCliente, valor, parcelas, data, descricao)
+        val inicial = campos.map { it.text.toString() }
         val scroll = ScrollView(this).apply { addView(layout) }
         AlertDialog.Builder(this)
             .setTitle(if (vendaExistente == null) "Nova Venda" else "Editar Card")
@@ -1830,7 +1931,26 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
             .setNegativeButton("Cancelar", null)
             .create()
             .apply {
+                setCanceledOnTouchOutside(false)
+                fun cancelarFormulario() {
+                    if (campos.map { it.text.toString() } == inicial && fotosRascunho.isEmpty()) dismiss()
+                    else AlertDialog.Builder(this@MainActivity)
+                        .setTitle("Descartar alterações?")
+                        .setMessage("As alterações desta venda ainda não foram salvas.")
+                        .setNegativeButton("Continuar editando", null)
+                        .setPositiveButton("Descartar") { _, _ -> dismiss() }.show()
+                }
+                setOnKeyListener { _, key, event ->
+                    if (key == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                        cancelarFormulario(); true
+                    } else key == KeyEvent.KEYCODE_BACK
+                }
+                val dialogBack = if (Build.VERSION.SDK_INT >= 33) android.window.OnBackInvokedCallback { cancelarFormulario() } else null
                 setOnShowListener {
+                    if (Build.VERSION.SDK_INT >= 33 && dialogBack != null) window?.onBackInvokedDispatcher?.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, dialogBack)
+                    window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                    window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, (resources.displayMetrics.heightPixels * 0.85).toInt())
+                    getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener { cancelarFormulario() }
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         val valorVenda = valor.text.toString().replace(",", ".").toDoubleOrNull() ?: 0.0
                         val qtParcelas = (parcelas.text.toString().toIntOrNull() ?: 1).coerceAtLeast(1)
@@ -1879,6 +1999,7 @@ private fun cobrarViaWhatsApp(venda: VendaRelatorio) {
                     }
                 }
                 setOnDismissListener {
+                    if (Build.VERSION.SDK_INT >= 33 && dialogBack != null) window?.onBackInvokedDispatcher?.unregisterOnBackInvokedCallback(dialogBack)
                     listaFotosRascunho = null
                     fotosRascunho.clear()
                     arquivoCamera?.delete()
